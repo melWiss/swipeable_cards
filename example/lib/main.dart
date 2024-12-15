@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:swipeable_cards/swipeable_cards.dart';
+import 'package:eazy_swipeable_cards/eazy_swipeable_cards.dart';
 
 void main() {
   runApp(const MyApp());

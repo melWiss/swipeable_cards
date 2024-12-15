@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:swipeable_cards/src/logger.dart';
+import 'package:eazy_swipeable_cards/src/logger.dart';
 
 /// A widget that displays a stack of swipeable cards with customizable actions
 /// for swiping left, swiping right, and double-tapping.

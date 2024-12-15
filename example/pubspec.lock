@@ -49,14 +49,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  event_queue:
-    dependency: transitive
+  eazy_swipeable_cards:
+    dependency: "direct main"
     description:
-      name: event_queue
-      sha256: e5f8c2670de55a4f3af00ed0db6f86a89bbc0f0c30287f468ddc12b9270161db
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.6"
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.1"
   fake_async:
     dependency: transitive
     description:
@@ -184,13 +183,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
-  swipeable_cards:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "0.0.1"
   term_glyph:
     dependency: transitive
     description:

@@ -15,11 +15,11 @@ The `SwipeableCards` widget allows you to create swipeable cards with custom swi
 
 ## Installation
 
-To use the `SwipeableCards` widget, add the `swipeable_cards` package to your `pubspec.yaml`:
+To use the `SwipeableCards` widget, add the `eazy_swipeable_cards` package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  swipeable_cards: ^0.0.1
+  eazy_swipeable_cards: ^0.0.1
 ```
 
 Run `flutter pub get` to fetch the package.
@@ -32,7 +32,7 @@ Below is an example demonstrating how to use the `SwipeableCards` widget:
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:swipeable_cards/swipeable_cards.dart';
+import 'package:eazy_swipeable_cards/eazy_swipeable_cards.dart';
 
 void main() {
   runApp(const MyApp());
