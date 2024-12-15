@@ -4,6 +4,8 @@
 
 The `SwipeableCards` widget allows you to create swipeable cards with custom swipe actions. It is useful for creating interactive UIs where users can swipe through a stack of cards and perform specific actions based on swipe directions.
 
+![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output.gif?raw=true)
+
 ## Features
 
 - Display a stack of cards with customizable child widgets.
