@@ -7,6 +7,6 @@ class SwipeableLogger {
       _swipeableLogger ??= SwipeableLogger._();
 
   void log(String text) {
-    dev.log(text, name: "SwipeableCards");
+    dev.log(text, name: "EazySwipeableCards");
   }
 }

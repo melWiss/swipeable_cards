@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: SwipeableCards(
+        child: EazySwipeableCards(
           screenHeight: MediaQuery.of(context).size.height,
           screenWidth: MediaQuery.of(context).size.width,
           onSwipeLeft: () {

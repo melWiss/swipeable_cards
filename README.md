@@ -1,8 +1,8 @@
-# SwipeableCards Widget Documentation
+# EazySwipeableCards Widget Documentation
 
 ## Overview
 
-The `SwipeableCards` widget allows you to create swipeable cards with custom swipe actions. It is useful for creating interactive UIs where users can swipe through a stack of cards and perform specific actions based on swipe directions.
+The `EazySwipeableCards` widget allows you to create swipeable cards with custom swipe actions. It is useful for creating interactive UIs where users can swipe through a stack of cards and perform specific actions based on swipe directions.
 
 ![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output.gif?raw=true)
 
@@ -15,7 +15,7 @@ The `SwipeableCards` widget allows you to create swipeable cards with custom swi
 
 ## Installation
 
-To use the `SwipeableCards` widget, add the `eazy_swipeable_cards` package to your `pubspec.yaml`:
+To use the `EazySwipeableCards` widget, add the `eazy_swipeable_cards` package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
@@ -26,7 +26,7 @@ Run `flutter pub get` to fetch the package.
 
 ## Basic Usage
 
-Below is an example demonstrating how to use the `SwipeableCards` widget:
+Below is an example demonstrating how to use the `EazySwipeableCards` widget:
 
 ### Full Example
 
@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: SwipeableCards(
+        child: EazySwipeableCards(
           screenHeight: MediaQuery.of(context).size.height,
           screenWidth: MediaQuery.of(context).size.width,
           onSwipeLeft: () {
@@ -189,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 1. **App Structure**:
 
-   - The app uses the `SwipeableCards` widget inside the `MyHomePage` class.
+   - The app uses the `EazySwipeableCards` widget inside the `MyHomePage` class.
    - The cards are full-screen containers with different colors.
 
 2. **Handling Swipes**:
@@ -218,10 +218,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 ## Troubleshooting
 
-- Ensure the `SwipeableCards` widget is wrapped in a `Center` or appropriate layout to avoid overflow issues.
+- Ensure the `EazySwipeableCards` widget is wrapped in a `Center` or appropriate layout to avoid overflow issues.
 - Verify that swipe gestures are not blocked by overlapping widgets or layouts.
 
 ## Conclusion
 
-The `SwipeableCards` widget is a versatile and easy-to-use component for creating swipeable interfaces. With minimal setup and high customizability, it can fit a wide range of use cases in your Flutter app.
+The `EazySwipeableCards` widget is a versatile and easy-to-use component for creating swipeable interfaces. With minimal setup and high customizability, it can fit a wide range of use cases in your Flutter app.
 

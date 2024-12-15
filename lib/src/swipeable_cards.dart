@@ -6,16 +6,16 @@ import 'package:eazy_swipeable_cards/src/logger.dart';
 /// A widget that displays a stack of swipeable cards with customizable actions
 /// for swiping left, swiping right, and double-tapping.
 ///
-/// The `SwipeableCards` widget is designed for use cases where cards need to
+/// The `EazySwipeableCards` widget is designed for use cases where cards need to
 /// be swiped for interaction, such as in a dating app or a meme browsing app.
 /// It supports animations and optional callbacks for each swipe action.
-class SwipeableCards extends StatefulWidget {
-  /// Creates a [SwipeableCards] widget.
+class EazySwipeableCards extends StatefulWidget {
+  /// Creates a [EazySwipeableCards] widget.
   ///
   /// [screenHeight] and [screenWidth] are required to determine the layout
   /// dimensions of the cards. The [children] parameter provides the list of
   /// widgets to display as cards, which are swiped in order.
-  const SwipeableCards({
+  const EazySwipeableCards({
     super.key,
     required this.screenHeight,
     required this.screenWidth,
@@ -61,10 +61,10 @@ class SwipeableCards extends StatefulWidget {
   final Color? borderColor;
 
   @override
-  State<SwipeableCards> createState() => _SwipeableCardsState();
+  State<EazySwipeableCards> createState() => _SwipeableCardsState();
 }
 
-class _SwipeableCardsState extends State<SwipeableCards> {
+class _SwipeableCardsState extends State<EazySwipeableCards> {
   final StreamController<Function> _controller = StreamController();
   late final StreamSubscription<Function> _subscription;
   final SwipeableLogger logger = SwipeableLogger.instance;
