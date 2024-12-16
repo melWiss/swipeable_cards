@@ -1,3 +1,7 @@
+### 0.0.4
+
+* Marked screenHeight & screenWidth for deprecation
+
 ## 0.0.3
 
 * Removed the borderColor param.
