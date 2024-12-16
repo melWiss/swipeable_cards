@@ -8,25 +8,25 @@ The `EazySwipeableCards` widget allows you to create swipeable cards with custom
 
 ## Features
 
-- Display a stack of cards with customizable child widgets.
-- Handle swipe gestures (e.g., left or right swipes) using callback functions.
-- Optional widgets to appear on swipe actions.
-- Flexible layout with customizable borders and interactive double-tap behavior.
+- Display a stack of customizable cards.
+- Support for swipe gestures: left, right, and double-tap.
+- Optional widgets to appear during swipe actions.
+- Customizable card appearance with border radius and elevation settings.
 
 ## Installation
 
-To use the `EazySwipeableCards` widget, add the `eazy_swipeable_cards` package to your `pubspec.yaml`:
+To use the `EazySwipeableCards` widget, add the corresponding package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  eazy_swipeable_cards: ^0.0.1
+  eazy_swipeable_cards: ^0.0.3
 ```
 
 Run `flutter pub get` to fetch the package.
 
 ## Basic Usage
 
-Below is an example demonstrating how to use the `EazySwipeableCards` widget:
+Here is an example demonstrating how to use the `EazySwipeableCards` widget:
 
 ### Full Example
 
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Swipeable Cards Example',
+      title: 'EazySwipeableCards Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -79,51 +79,45 @@ class _MyHomePageState extends State<MyHomePage> {
           screenWidth: MediaQuery.of(context).size.width,
           onSwipeLeft: () {
             setState(() {
-              counter++;
+              counter--;
             });
           },
           onSwipeRight: () {
             setState(() {
-              counter--;
+              counter++;
             });
           },
           onDoubleTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Card Double-Tapped!')),
+              const SnackBar(content: Text('Card double-tapped!')),
             );
           },
-          onSwipedLeftAppear: Container(
-            alignment: Alignment.center,
-            color: Colors.red.withOpacity(0.5),
-            child: const Icon(Icons.thumb_down, size: 100, color: Colors.white),
+          onSwipedLeftAppear: const Material(
+            color: Colors.red,
+            child: Center(
+              child: Icon(
+                Icons.thumb_down,
+                size: 100,
+                color: Colors.white,
+              ),
+            ),
           ),
-          onSwipedRightAppear: Container(
-            alignment: Alignment.center,
-            color: Colors.green.withOpacity(0.5),
-            child: const Icon(Icons.thumb_up, size: 100, color: Colors.white),
+          onSwipedRightAppear: const Material(
+            color: Colors.green,
+            child: Center(
+              child: Icon(
+                Icons.thumb_up,
+                size: 100,
+                color: Colors.white,
+              ),
+            ),
           ),
-          borderColor: Colors.black,
+          borderRadius: 12.0,
+          elevation: 5.0,
           children: [
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.yellow,
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.blue,
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.green,
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.red,
-            ),
+            Container(color: Colors.orange),
+            Container(color: Colors.green),
+            Container(color: Colors.blue),
           ],
         ),
       ),
@@ -146,82 +140,58 @@ class _MyHomePageState extends State<MyHomePage> {
   - Type: `double`
   - Description: The width of the screen where the cards are displayed. Typically, set this using `MediaQuery.of(context).size.width`.
 
+### Optional Properties
+
 - **`children`**
 
-  - Type: `List<Widget>`
-  - Description: A list of widgets to display as cards.
-
-### Optional Callbacks
+  - Type: `List<Widget?>?`
+  - Description: A list of widgets to display as cards. Each card will be shown one at a time.
 
 - **`onSwipeLeft`**
 
   - Type: `VoidCallback?`
-  - Description: Called when a card is swiped left.
+  - Description: Callback triggered when a card is swiped left.
 
 - **`onSwipeRight`**
 
   - Type: `VoidCallback?`
-  - Description: Called when a card is swiped right.
+  - Description: Callback triggered when a card is swiped right.
 
 - **`onDoubleTap`**
 
   - Type: `VoidCallback?`
-  - Description: Called when a card is double-tapped.
-
-### Optional Appearance Properties
+  - Description: Callback triggered when a card is double-tapped.
 
 - **`onSwipedLeftAppear`**
 
   - Type: `Widget?`
-  - Description: An optional widget that appears when a card is swiped left.
+  - Description: Widget that appears when a card is swiped left.
 
 - **`onSwipedRightAppear`**
 
   - Type: `Widget?`
-  - Description: An optional widget that appears when a card is swiped right.
+  - Description: Widget that appears when a card is swiped right.
 
-- **`borderColor`**
+- **`borderRadius`**
 
-  - Type: `Color?`
-  - Description: The color of the border around each card. If not specified, the border is transparent by default.
+  - Type: `double`
+  - Default: `0.0`
+  - Description: The border radius of the cards.
 
-## Example Explanation
+- **`elevation`**
 
-1. **App Structure**:
-
-   - The app uses the `EazySwipeableCards` widget inside the `MyHomePage` class.
-   - The cards are full-screen containers with different colors.
-
-2. **Handling Swipes**:
-
-   - The `onSwipeLeft` callback increments a counter, while the `onSwipeRight` callback decrements it.
-
-3. **Custom Behavior**:
-
-   - The `onDoubleTap` callback displays a `SnackBar` when a card is double-tapped.
-   - The `onSwipedLeftAppear` and `onSwipedRightAppear` properties show widgets for swipe indicators.
-
-4. **Responsiveness**:
-
-   - The `screenHeight` and `screenWidth` are set using `MediaQuery` to ensure the widget adapts to different screen sizes.
-
-5. **Appearance**:
-
-   - Use the `borderColor` property to add or customize the border around each card.
+  - Type: `double`
+  - Default: `0.0`
+  - Description: The elevation level of the cards, reflecting shadow intensity.
 
 ## Customization Tips
 
-- Modify the `children` list to add custom content to your cards (e.g., images, text).
-- Use `onSwipeLeft` and `onSwipeRight` to trigger specific actions, such as navigating to a new screen or updating state.
-- Customize `onSwipedLeftAppear` and `onSwipedRightAppear` to provide user feedback for swipe actions.
-- Adjust `borderColor` to match the app’s theme or card design.
-
-## Troubleshooting
-
-- Ensure the `EazySwipeableCards` widget is wrapped in a `Center` or appropriate layout to avoid overflow issues.
-- Verify that swipe gestures are not blocked by overlapping widgets or layouts.
+- Adjust the `children` to add custom content to your cards, such as images or detailed widgets.
+- Use the `onSwipeLeft` and `onSwipeRight` callbacks to trigger app-specific actions, like navigation or state updates.
+- Customize `onSwipedLeftAppear` and `onSwipedRightAppear` to provide visual feedback during swipe gestures.
+- Modify `borderRadius` and `elevation` to tailor the visual style of the cards to your app's theme.
 
 ## Conclusion
 
-The `EazySwipeableCards` widget is a versatile and easy-to-use component for creating swipeable interfaces. With minimal setup and high customizability, it can fit a wide range of use cases in your Flutter app.
+The `EazySwipeableCards` widget simplifies the creation of interactive swipeable card UIs with highly customizable features. Its flexible API and straightforward integration make it a powerful choice for various Flutter applications.
 

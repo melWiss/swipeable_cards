@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Swipeable Cards Example',
+      title: 'EazySwipeableCards Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -46,52 +46,45 @@ class _MyHomePageState extends State<MyHomePage> {
           screenWidth: MediaQuery.of(context).size.width,
           onSwipeLeft: () {
             setState(() {
-              counter++;
+              counter--;
             });
           },
           onSwipeRight: () {
             setState(() {
-              counter--;
+              counter++;
             });
           },
           onDoubleTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Card Double-Tapped!')),
+              const SnackBar(content: Text('Card double-tapped!')),
             );
           },
-          onSwipedLeftAppear: Container(
-            alignment: Alignment.center,
-            color: Colors.red.withOpacity(0.5),
-            child: const Icon(Icons.thumb_down, size: 100, color: Colors.white),
+          onSwipedLeftAppear: const Material(
+            color: Colors.red,
+            child: Center(
+              child: Icon(
+                Icons.thumb_down,
+                size: 100,
+                color: Colors.white,
+              ),
+            ),
           ),
-          onSwipedRightAppear: Container(
-            alignment: Alignment.center,
-            color: Colors.green.withOpacity(0.5),
-            child: const Icon(Icons.thumb_up, size: 100, color: Colors.white),
+          onSwipedRightAppear: const Material(
+            color: Colors.green,
+            child: Center(
+              child: Icon(
+                Icons.thumb_up,
+                size: 100,
+                color: Colors.white,
+              ),
+            ),
           ),
-          borderRadius: 20,
-          elevation: 8,
+          borderRadius: 12.0,
+          elevation: 5.0,
           children: [
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.yellow,
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.blue,
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.green,
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              color: Colors.red,
-            ),
+            Container(color: Colors.orange),
+            Container(color: Colors.green),
+            Container(color: Colors.blue),
           ],
         ),
       ),
