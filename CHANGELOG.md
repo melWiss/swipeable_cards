@@ -1,3 +1,9 @@
+## 0.0.3
+
+* Removed the borderColor param.
+* Added the borderRadius param.
+* Added the elevation param.
+
 ## 0.0.2
 
 * Renamed the widget name

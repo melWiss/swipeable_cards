@@ -25,7 +25,8 @@ class EazySwipeableCards extends StatefulWidget {
     this.onDoubleTap,
     this.onSwipedRightAppear,
     this.onSwipedLeftAppear,
-    this.borderColor,
+    this.borderRadius = 0,
+    this.elevation = 0,
   });
 
   /// The height of the screen, used to size the cards.
@@ -55,10 +56,11 @@ class EazySwipeableCards extends StatefulWidget {
   /// An optional widget that appears when a card is swiped right.
   final Widget? onSwipedRightAppear;
 
-  /// The color of the border around each card.
-  ///
-  /// If no color is provided, the border will be transparent by default.
-  final Color? borderColor;
+  /// The border radius of the cards.
+  final double borderRadius;
+
+  /// The elevation level of the cards that will reflect the shadow intensity.
+  final double elevation;
 
   @override
   State<EazySwipeableCards> createState() => _SwipeableCardsState();
@@ -73,14 +75,14 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
   late double dx2, dy2, dx2End, dy2End;
   late double dx3, dy3;
   late double heightCard2, widthCard2, heightCard2End, widthCard2End;
-  late Color thirdCardColor;
   late int duration;
   late Widget? card1, card2, card3, onSwipedLeftAppear, onSwipedRightAppear;
   late double swipedCardLeftOpacity, swipedCardRightOpacity;
+  late double borderRadius;
+  late double elevation;
   late List<Widget?> cards;
   late int counter;
   late void Function() onSwipeLeft, onSwipeRight, onDoubleTap;
-  late Color borderColor;
   @override
   void initState() {
     super.initState();
@@ -89,8 +91,6 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
     screenHeight = widget.screenHeight;
     screenWidth = widget.screenWidth;
     counter = 0;
-    borderColor =
-        widget.borderColor != null ? widget.borderColor! : Colors.transparent;
     initCards();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
@@ -142,11 +142,12 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
     widthCard2End = (widget.screenWidth * .9) * .75;
     dx3 = dx2;
     dy3 = dy2;
-    thirdCardColor = Colors.white10;
     duration = 0;
     onSwipeLeft = widget.onSwipeLeft != null ? widget.onSwipeLeft! : () {};
     onSwipeRight = widget.onSwipeRight != null ? widget.onSwipeRight! : () {};
     onDoubleTap = widget.onDoubleTap != null ? widget.onDoubleTap! : () {};
+    borderRadius = widget.borderRadius;
+    elevation = widget.elevation;
   }
 
   @override
@@ -166,25 +167,15 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
               ? Transform.translate(
                   offset: Offset(dx3, dy3),
                   child: Material(
-                    elevation: 8,
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(20)),
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: duration),
-                        height: heightCard2,
-                        width: widthCard2,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(20)),
-                          color: thirdCardColor,
-                          border: Border.all(
-                            width: 1.5,
-                            color: borderColor,
-                          ),
-                        ),
-                        child: card3,
-                      ),
+                    elevation: elevation,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(borderRadius)),
+                    clipBehavior: Clip.antiAlias,
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: duration),
+                      height: heightCard2,
+                      width: widthCard2,
+                      child: card3,
                     ),
                   ),
                 )
@@ -208,25 +199,15 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
                   },
                   duration: Duration(milliseconds: duration),
                   child: Material(
-                    elevation: 8,
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(20)),
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: duration),
-                        height: heightCard2End,
-                        width: widthCard2End,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(20)),
-                          color: Colors.white38,
-                          border: Border.all(
-                            width: 1.5,
-                            color: borderColor,
-                          ),
-                        ),
-                        child: card2,
-                      ),
+                    elevation: elevation,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(borderRadius)),
+                    clipBehavior: Clip.antiAlias,
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: duration),
+                      height: heightCard2End,
+                      width: widthCard2End,
+                      child: card2,
                     ),
                   ),
                   builder: (context, Offset offsetAnimated, Widget? card) {
@@ -253,47 +234,39 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
                         dy2End = dy1;
                         heightCard2End = (widget.screenHeight * .7) * .75;
                         widthCard2End = (widget.screenWidth * .9) * .95;
-                        thirdCardColor = Colors.white38;
                       }
                     });
                   },
                   child: Material(
-                    elevation: 8,
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(20)),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white38,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(20)),
-                          border: Border.all(width: 2, color: borderColor),
-                        ),
-                        height: heightCard1,
-                        width: widthCard1,
-                        child: Stack(
-                          children: <Widget>[
-                            card1!,
-                            onSwipedLeftAppear != null
-                                ? AnimatedContainer(
-                                    duration: Duration(milliseconds: duration),
-                                    child: Opacity(
-                                      opacity: swipedCardLeftOpacity,
-                                      child: onSwipedLeftAppear,
-                                    ),
-                                  )
-                                : Container(),
-                            onSwipedRightAppear != null
-                                ? AnimatedContainer(
-                                    duration: Duration(milliseconds: duration),
-                                    child: Opacity(
-                                      opacity: swipedCardRightOpacity,
-                                      child: onSwipedRightAppear,
-                                    ),
-                                  )
-                                : Container(),
-                          ],
-                        ),
+                    elevation: elevation,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(borderRadius)),
+                    clipBehavior: Clip.antiAlias,
+                    child: SizedBox(
+                      height: heightCard1,
+                      width: widthCard1,
+                      child: Stack(
+                        children: <Widget>[
+                          card1!,
+                          onSwipedLeftAppear != null
+                              ? AnimatedContainer(
+                                  duration: Duration(milliseconds: duration),
+                                  child: Opacity(
+                                    opacity: swipedCardLeftOpacity,
+                                    child: onSwipedLeftAppear,
+                                  ),
+                                )
+                              : Container(),
+                          onSwipedRightAppear != null
+                              ? AnimatedContainer(
+                                  duration: Duration(milliseconds: duration),
+                                  child: Opacity(
+                                    opacity: swipedCardRightOpacity,
+                                    child: onSwipedRightAppear,
+                                  ),
+                                )
+                              : Container(),
+                        ],
                       ),
                     ),
                   ),
@@ -379,11 +352,7 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
                             });
                           }
                         },
-                        child: Stack(
-                          children: <Widget>[
-                            card!,
-                          ],
-                        ),
+                        child: card!,
                       ),
                     );
                   },

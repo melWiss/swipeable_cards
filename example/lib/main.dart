@@ -69,7 +69,8 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Colors.green.withOpacity(0.5),
             child: const Icon(Icons.thumb_up, size: 100, color: Colors.white),
           ),
-          borderColor: Colors.black,
+          borderRadius: 20,
+          elevation: 8,
           children: [
             Container(
               height: double.infinity,
