@@ -12,13 +12,12 @@ import 'package:eazy_swipeable_cards/src/logger.dart';
 class EazySwipeableCards<T> extends StatefulWidget {
   /// Creates a [EazySwipeableCards] widget.
   ///
-  /// The [children] parameter provides the list of
-  /// widgets to display as cards, which are swiped in order.
+  /// The [builder] parameter provides a method that will build the cards
+  /// depending on the [T] items.
   const EazySwipeableCards({
     required this.screenHeight,
     required this.screenWidth,
     required this.builder,
-    required this.items,
     this.onLoadMore,
     super.key,
     this.onSwipeLeft,
@@ -40,9 +39,6 @@ class EazySwipeableCards<T> extends StatefulWidget {
   @Deprecated("The widget will now take the whole available space.")
   final double screenWidth;
 
-  /// The items that are feeded to this stack of cards.
-  final List<T> items;
-
   /// This parameter will be used to determine when to call the builder function.
   /// If the number of cards left in the stack is equal to [pageThreshold] then
   /// the [onLoadMore] items will be called.
@@ -53,7 +49,8 @@ class EazySwipeableCards<T> extends StatefulWidget {
 
   /// This method will be called when the [EazySwipeableCards] needs more cards
   /// to the stack. If this parameter is null, the pagination won't work.
-  final FutureOr<List<T>> Function(int pageSize, int pageNumber)? onLoadMore;
+  final Future<List<T>> Function(
+      {required int pageSize, required int pageNumber})? onLoadMore;
 
   /// A builder method to build the cards.
   final Widget Function(T item, BuildContext context) builder;
@@ -94,10 +91,15 @@ class _SwipeableCardsState<T> extends State<EazySwipeableCards<T>> {
   late int duration;
   late double swipedCardLeftOpacity, swipedCardRightOpacity;
   int index = 0;
+  int pageIndex = 0;
+  int? latestPageIndexCall;
   double? screenHeight, screenWidth;
+  late final List<T> items;
   @override
   void initState() {
     super.initState();
+    items = List<T>.empty(growable: true);
+    safelyCallOnload(pageIndex);
     _subscription = _controller.stream.listen(
       (event) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -151,6 +153,22 @@ class _SwipeableCardsState<T> extends State<EazySwipeableCards<T>> {
     }
   }
 
+  void safelyCallOnload(int pageIndex) {
+    if (pageIndex != latestPageIndexCall && widget.onLoadMore != null) {
+      latestPageIndexCall = pageIndex;
+      widget.onLoadMore!(pageNumber: pageIndex, pageSize: widget.pageSize).then(
+        (value) {
+          if (value.isNotEmpty) {
+            items.addAll(value);
+            setState(() {
+              this.pageIndex++;
+            });
+          }
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -158,11 +176,19 @@ class _SwipeableCardsState<T> extends State<EazySwipeableCards<T>> {
         double screenHeight = constraints.maxHeight;
         double screenWidth = constraints.maxWidth;
         init(screenHeight, screenWidth);
-        List<Widget> stackChildren = widget.items
-            // .sublist(index, index + widget.pageSize)
-            .sublist(index)
-            .map<Widget>((e) => widget.builder(e, context))
-            .toList();
+        List<Widget> stackChildren;
+        if (items.length < index + widget.pageSize + widget.pageThreshold) {
+          stackChildren = items
+              .sublist(index)
+              .map<Widget>((e) => widget.builder(e, context))
+              .toList();
+          safelyCallOnload(pageIndex);
+        } else {
+          stackChildren = items
+              .sublist(index, index + widget.pageSize)
+              .map<Widget>((e) => widget.builder(e, context))
+              .toList();
+        }
         return SizedBox(
           height: screenHeight * .7,
           width: screenWidth * .9,

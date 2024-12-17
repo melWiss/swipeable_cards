@@ -1,34 +1,39 @@
-# EazySwipeableCards Widget Documentation
+# Eazy Swipeable Cards Documentation
 
 ## Overview
 
-The `EazySwipeableCards` widget allows you to create swipeable cards with custom swipe actions. It is useful for creating interactive UIs where users can swipe through a stack of cards and perform specific actions based on swipe directions.
+The `EazySwipeableCards` widget provides a stack of interactive cards that users can swipe left, swipe right, or double-tap. This widget is ideal for applications like dating apps, meme browsing, or any app where swipe-based interaction is central to the user experience.
 
 ![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output.gif?raw=true)
 
-## Features
+Key features include:
 
-- Display a stack of customizable cards.
-- Support for swipe gestures: left, right, and double-tap.
-- Optional widgets to appear during swipe actions.
-- Customizable card appearance with border radius and elevation settings.
+- Customizable swipe actions (left, right, double-tap).
+- Optional widgets that appear when swiping left or right.
+- Pagination support for dynamically loading more cards.
+- Animations for swipe gestures.
+- Customizable card styles, including border radius and elevation.
 
-## Installation
+---
 
-To use the `EazySwipeableCards` widget, add the corresponding package to your `pubspec.yaml`:
+## Getting Started
+
+To use the `EazySwipeableCards` widget in your Flutter project, first, add the `eazy_swipeable_cards` package to your `pubspec.yaml` file.
 
 ```yaml
 dependencies:
-  eazy_swipeable_cards: ^0.0.3
+  eazy_swipeable_cards: ^0.0.4
 ```
 
-Run `flutter pub get` to fetch the package.
+Then, import the package:
 
-## Basic Usage
+```dart
+import 'package:eazy_swipeable_cards/eazy_swipeable_cards.dart';
+```
 
-Here is an example demonstrating how to use the `EazySwipeableCards` widget:
+---
 
-### Full Example
+## Usage Example
 
 ```dart
 import 'package:flutter/material.dart';
@@ -65,6 +70,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int counter = 0;
+  SwipeableLogger logger = SwipeableLogger.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: EazySwipeableCards(
+        child: EazySwipeableCards<MaterialColor>(
           screenHeight: MediaQuery.of(context).size.height,
           screenWidth: MediaQuery.of(context).size.width,
           onSwipeLeft: () {
@@ -114,11 +120,23 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           borderRadius: 12.0,
           elevation: 5.0,
-          children: [
-            Container(color: Colors.orange),
-            Container(color: Colors.green),
-            Container(color: Colors.blue),
-          ],
+          pageSize: 6,
+          pageThreshold: 3,
+          onLoadMore: ({required pageNumber, required pageSize}) async {
+            logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
+            await Future.delayed(const Duration(seconds: 3));
+            return Future.value([
+              Colors.orange,
+              Colors.green,
+              Colors.blue,
+              Colors.orange,
+              Colors.green,
+              Colors.blue,
+            ]);
+          },
+          builder: (MaterialColor item, BuildContext _) => Container(
+            color: item,
+          ),
         ),
       ),
     );
@@ -126,72 +144,90 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 ```
 
-## Properties
+---
 
-### Required Properties
+## Parameters
 
-- **`screenHeight`**
+### Required Parameters
 
-  - Type: `double`
-  - Description: The height of the screen where the cards are displayed. Typically, set this using `MediaQuery.of(context).size.height`.
+#### `builder`
 
-- **`screenWidth`**
+- **Type:** `Widget Function(T item, BuildContext context)`
+- **Description:** A builder method that defines how each card is rendered based on the provided data of type `T`.
 
-  - Type: `double`
-  - Description: The width of the screen where the cards are displayed. Typically, set this using `MediaQuery.of(context).size.width`.
+### Optional Parameters
 
-### Optional Properties
+#### `onLoadMore`
 
-- **`children`**
+- **Type:** `Future<List<T>> Function({required int pageSize, required int pageNumber})?`
+- **Description:** A callback to load more items when the stack is running low. Pagination logic is handled here.
 
-  - Type: `List<Widget?>?`
-  - Description: A list of widgets to display as cards. Each card will be shown one at a time.
+#### `onSwipeLeft`
 
-- **`onSwipeLeft`**
+- **Type:** `void Function()?`
+- **Description:** A callback triggered when a card is swiped left.
 
-  - Type: `VoidCallback?`
-  - Description: Callback triggered when a card is swiped left.
+#### `onSwipeRight`
 
-- **`onSwipeRight`**
+- **Type:** `void Function()?`
+- **Description:** A callback triggered when a card is swiped right.
 
-  - Type: `VoidCallback?`
-  - Description: Callback triggered when a card is swiped right.
+#### `onDoubleTap`
 
-- **`onDoubleTap`**
+- **Type:** `void Function()?`
+- **Description:** A callback triggered when a card is double-tapped.
 
-  - Type: `VoidCallback?`
-  - Description: Callback triggered when a card is double-tapped.
+#### `onSwipedLeftAppear`
 
-- **`onSwipedLeftAppear`**
+- **Type:** `Widget?`
+- **Description:** A widget displayed when a card is swiped left.
 
-  - Type: `Widget?`
-  - Description: Widget that appears when a card is swiped left.
+#### `onSwipedRightAppear`
 
-- **`onSwipedRightAppear`**
+- **Type:** `Widget?`
+- **Description:** A widget displayed when a card is swiped right.
 
-  - Type: `Widget?`
-  - Description: Widget that appears when a card is swiped right.
+#### `borderRadius`
 
-- **`borderRadius`**
+- **Type:** `double`
+- **Default:** `0`
+- **Description:** The border radius of the cards.
 
-  - Type: `double`
-  - Default: `0.0`
-  - Description: The border radius of the cards.
+#### `elevation`
 
-- **`elevation`**
+- **Type:** `double`
+- **Default:** `0`
+- **Description:** The elevation level of the cards.
 
-  - Type: `double`
-  - Default: `0.0`
-  - Description: The elevation level of the cards, reflecting shadow intensity.
+#### `pageSize`
 
-## Customization Tips
+- **Type:** `int`
+- **Default:** `1`
+- **Description:** Determines the number of cards to load per page.
 
-- Adjust the `children` to add custom content to your cards, such as images or detailed widgets.
-- Use the `onSwipeLeft` and `onSwipeRight` callbacks to trigger app-specific actions, like navigation or state updates.
-- Customize `onSwipedLeftAppear` and `onSwipedRightAppear` to provide visual feedback during swipe gestures.
-- Modify `borderRadius` and `elevation` to tailor the visual style of the cards to your app's theme.
+#### `pageThreshold`
 
-## Conclusion
+- **Type:** `int`
+- **Default:** `0`
+- **Description:** Defines the threshold at which more items are loaded.
 
-The `EazySwipeableCards` widget simplifies the creation of interactive swipeable card UIs with highly customizable features. Its flexible API and straightforward integration make it a powerful choice for various Flutter applications.
+---
+
+## Deprecated Parameters
+
+### `screenHeight`
+
+- **Type:** `double`
+- **Description:** Previously used to define the height of the cards. The widget now takes the entire available space.
+
+### `screenWidth`
+
+- **Type:** `double`
+- **Description:** Previously used to define the width of the cards. The widget now takes the entire available space.
+
+---
+
+## Migration Notes
+
+For existing implementations using `screenHeight` and `screenWidth`, simply remove these parameters, as the widget now automatically adapts to the available space.
 

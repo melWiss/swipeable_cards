@@ -32,6 +32,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int counter = 0;
+  SwipeableLogger logger = SwipeableLogger.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -81,18 +82,20 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           borderRadius: 12.0,
           elevation: 5.0,
-          items: const <MaterialColor>[
-            Colors.orange,
-            Colors.green,
-            Colors.blue,
-            Colors.orange,
-            Colors.green,
-            Colors.blue,
-            Colors.orange,
-            Colors.green,
-            Colors.blue,
-          ],
-          pageSize: 9,
+          pageSize: 6,
+          pageThreshold: 3,
+          onLoadMore: ({required pageNumber, required pageSize}) async {
+            logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
+            await Future.delayed(const Duration(seconds: 3));
+            return Future.value([
+              Colors.orange,
+              Colors.green,
+              Colors.blue,
+              Colors.orange,
+              Colors.green,
+              Colors.blue,
+            ]);
+          },
           builder: (MaterialColor item, BuildContext _) => Container(
             color: item,
           ),
