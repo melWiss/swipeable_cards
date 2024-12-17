@@ -9,17 +9,18 @@ import 'package:eazy_swipeable_cards/src/logger.dart';
 /// The `EazySwipeableCards` widget is designed for use cases where cards need to
 /// be swiped for interaction, such as in a dating app or a meme browsing app.
 /// It supports animations and optional callbacks for each swipe action.
-class EazySwipeableCards extends StatefulWidget {
+class EazySwipeableCards<T> extends StatefulWidget {
   /// Creates a [EazySwipeableCards] widget.
   ///
-  /// [screenHeight] and [screenWidth] are required to determine the layout
-  /// dimensions of the cards. The [children] parameter provides the list of
+  /// The [children] parameter provides the list of
   /// widgets to display as cards, which are swiped in order.
   const EazySwipeableCards({
-    super.key,
     required this.screenHeight,
     required this.screenWidth,
-    this.children,
+    required this.builder,
+    required this.items,
+    this.onLoadMore,
+    super.key,
     this.onSwipeLeft,
     this.onSwipeRight,
     this.onDoubleTap,
@@ -27,6 +28,8 @@ class EazySwipeableCards extends StatefulWidget {
     this.onSwipedLeftAppear,
     this.borderRadius = 0,
     this.elevation = 0,
+    this.pageSize = 1,
+    this.pageThreshold = 0,
   });
 
   /// The height of the screen, used to size the cards.
@@ -37,11 +40,23 @@ class EazySwipeableCards extends StatefulWidget {
   @Deprecated("The widget will now take the whole available space.")
   final double screenWidth;
 
-  /// A list of widgets to display as swipeable cards.
-  ///
-  /// Each card will be displayed one at a time, and the next card will appear
-  /// as the previous card is swiped away.
-  final List<Widget?>? children;
+  /// The items that are feeded to this stack of cards.
+  final List<T> items;
+
+  /// This parameter will be used to determine when to call the builder function.
+  /// If the number of cards left in the stack is equal to [pageThreshold] then
+  /// the [onLoadMore] items will be called.
+  final int pageThreshold;
+
+  /// This will represent the page size of stack.
+  final int pageSize;
+
+  /// This method will be called when the [EazySwipeableCards] needs more cards
+  /// to the stack. If this parameter is null, the pagination won't work.
+  final FutureOr<List<T>> Function(int pageSize, int pageNumber)? onLoadMore;
+
+  /// A builder method to build the cards.
+  final Widget Function(T item, BuildContext context) builder;
 
   /// Callback triggered when a card is swiped left.
   final void Function()? onSwipeLeft;
@@ -65,10 +80,10 @@ class EazySwipeableCards extends StatefulWidget {
   final double elevation;
 
   @override
-  State<EazySwipeableCards> createState() => _SwipeableCardsState();
+  State<EazySwipeableCards<T>> createState() => _SwipeableCardsState<T>();
 }
 
-class _SwipeableCardsState extends State<EazySwipeableCards> {
+class _SwipeableCardsState<T> extends State<EazySwipeableCards<T>> {
   final StreamController<Function> _controller = StreamController();
   late final StreamSubscription<Function> _subscription;
   final SwipeableLogger logger = SwipeableLogger.instance;
@@ -77,20 +92,12 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
   late double dx3, dy3;
   late double heightCard2, widthCard2, heightCard2End, widthCard2End;
   late int duration;
-  late Widget? card1, card2, card3, onSwipedLeftAppear, onSwipedRightAppear;
   late double swipedCardLeftOpacity, swipedCardRightOpacity;
-  late double borderRadius;
-  late double elevation;
-  late List<Widget?> cards;
-  late int counter;
-  late void Function() onSwipeLeft, onSwipeRight, onDoubleTap;
+  int index = 0;
   double? screenHeight, screenWidth;
   @override
   void initState() {
     super.initState();
-    onSwipedLeftAppear = widget.onSwipedLeftAppear;
-    onSwipedRightAppear = widget.onSwipedRightAppear;
-    counter = 0;
     _subscription = _controller.stream.listen(
       (event) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,14 +109,20 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
     );
   }
 
+  void safeSetState(Function function) {
+    _controller.add(function);
+  }
+
   @override
   void dispose() {
     _subscription.cancel();
     super.dispose();
   }
 
-  void init(double screenHeight, double screenWidth) {
-    if (screenHeight != this.screenHeight || screenWidth != this.screenWidth) {
+  void init(double screenHeight, double screenWidth, {bool forced = false}) {
+    if (screenHeight != this.screenHeight ||
+        screenWidth != this.screenWidth ||
+        forced) {
       this.screenHeight = screenHeight;
       this.screenWidth = screenWidth;
       dx1 = ((screenWidth * .9) * .05) / 2;
@@ -132,241 +145,218 @@ class _SwipeableCardsState extends State<EazySwipeableCards> {
       dx3 = dx2;
       dy3 = dy2;
       duration = 0;
-      onSwipeLeft = widget.onSwipeLeft != null ? widget.onSwipeLeft! : () {};
-      onSwipeRight = widget.onSwipeRight != null ? widget.onSwipeRight! : () {};
-      onDoubleTap = widget.onDoubleTap != null ? widget.onDoubleTap! : () {};
-      borderRadius = widget.borderRadius;
-      elevation = widget.elevation;
-      logger.log("refreshed");
+      if (!forced) {
+        logger.log("initialized");
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      double screenHeight = constraints.maxHeight;
-      double screenWidth = constraints.maxWidth;
-      init(screenHeight, screenWidth);
-      initCards();
-      return SizedBox(
-        height: screenHeight * .7,
-        width: screenWidth * .9,
-        child: Stack(
-          children: <Widget>[
-            card3 != null
-                ? Transform.translate(
-                    offset: Offset(dx3, dy3),
-                    child: Material(
-                      elevation: elevation,
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(borderRadius)),
-                      clipBehavior: Clip.antiAlias,
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: duration),
-                        height: heightCard2,
-                        width: widthCard2,
-                        child: card3,
-                      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double screenHeight = constraints.maxHeight;
+        double screenWidth = constraints.maxWidth;
+        init(screenHeight, screenWidth);
+        List<Widget> stackChildren = widget.items
+            // .sublist(index, index + widget.pageSize)
+            .sublist(index)
+            .map<Widget>((e) => widget.builder(e, context))
+            .toList();
+        return SizedBox(
+          height: screenHeight * .7,
+          width: screenWidth * .9,
+          child: Stack(
+            children: <Widget>[
+              if (stackChildren.length >= 3)
+                Transform.translate(
+                  offset: Offset(dx3, dy3),
+                  child: Material(
+                    elevation: widget.elevation,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(widget.borderRadius)),
+                    clipBehavior: Clip.antiAlias,
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: duration),
+                      height: heightCard2,
+                      width: widthCard2,
+                      child: stackChildren[2],
                     ),
-                  )
-                : Container(),
-            card2 != null
-                ? TweenAnimationBuilder(
-                    tween: Tween<Offset>(
-                      begin: Offset(dx2, dy2),
-                      end: Offset(dx2End, dy2End),
-                    ),
-                    onEnd: () {
-                      _controller.add(() {
-                        if ((dx1 != dx1End) &&
-                            (dx1End.abs() - dx1b.abs() < 1)) {
-                          counter++;
-                          card1 = cards[counter];
-                          card2 = cards[counter + 1];
-                          card3 = cards[counter + 2];
-                          init(screenHeight, screenWidth);
-                        }
-                      });
-                    },
-                    duration: Duration(milliseconds: duration),
-                    child: Material(
-                      elevation: elevation,
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(borderRadius)),
-                      clipBehavior: Clip.antiAlias,
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: duration),
-                        height: heightCard2End,
-                        width: widthCard2End,
-                        child: card2,
-                      ),
-                    ),
-                    builder: (context, Offset offsetAnimated, Widget? card) {
-                      return Transform.translate(
-                        offset: offsetAnimated,
-                        child: card,
-                      );
-                    },
-                  )
-                : Container(),
-            card1 != null
-                ? TweenAnimationBuilder(
-                    tween: Tween<double>(begin: dx1, end: dx1End),
-                    duration: Duration(milliseconds: duration),
-                    onEnd: () {
-                      if (dx1End == screenWidth) {
-                        onSwipeRight();
-                      } else if (dx1End == -screenWidth) {
-                        onSwipeLeft();
+                  ),
+                ),
+              if (stackChildren.length >= 2)
+                TweenAnimationBuilder(
+                  tween: Tween<Offset>(
+                    begin: Offset(dx2, dy2),
+                    end: Offset(dx2End, dy2End),
+                  ),
+                  onEnd: () {
+                    safeSetState(() {
+                      if ((dx1 != dx1End) && (dx1End.abs() - dx1b.abs() < 1)) {
+                        index++;
+                        init(screenHeight, screenWidth, forced: true);
                       }
-                      _controller.add(() {
-                        if (dx1 != dx1End) {
-                          dx2End = ((screenWidth * .9) * .05) / 2;
-                          dy2End = dy1;
-                          heightCard2End = (screenHeight * .7) * .75;
-                          widthCard2End = (screenWidth * .9) * .95;
-                        }
-                      });
-                    },
-                    child: Material(
-                      elevation: elevation,
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(borderRadius)),
-                      clipBehavior: Clip.antiAlias,
-                      child: SizedBox(
-                        height: heightCard1,
-                        width: widthCard1,
-                        child: Stack(
-                          children: <Widget>[
-                            card1!,
-                            onSwipedLeftAppear != null
-                                ? AnimatedContainer(
-                                    duration: Duration(milliseconds: duration),
-                                    child: Opacity(
-                                      opacity: swipedCardLeftOpacity,
-                                      child: onSwipedLeftAppear,
-                                    ),
-                                  )
-                                : Container(),
-                            onSwipedRightAppear != null
-                                ? AnimatedContainer(
-                                    duration: Duration(milliseconds: duration),
-                                    child: Opacity(
-                                      opacity: swipedCardRightOpacity,
-                                      child: onSwipedRightAppear,
-                                    ),
-                                  )
-                                : Container(),
-                          ],
-                        ),
+                    });
+                  },
+                  duration: Duration(milliseconds: duration),
+                  child: Material(
+                    elevation: widget.elevation,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(widget.borderRadius)),
+                    clipBehavior: Clip.antiAlias,
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: duration),
+                      height: heightCard2End,
+                      width: widthCard2End,
+                      child: stackChildren[1],
+                    ),
+                  ),
+                  builder: (context, Offset offsetAnimated, Widget? card) {
+                    return Transform.translate(
+                      offset: offsetAnimated,
+                      child: card,
+                    );
+                  },
+                ),
+              if (stackChildren.isNotEmpty)
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: dx1, end: dx1End),
+                  duration: Duration(milliseconds: duration),
+                  onEnd: () {
+                    if (dx1End == screenWidth) {
+                      widget.onSwipeRight?.call();
+                    } else if (dx1End == -screenWidth) {
+                      widget.onSwipeLeft?.call();
+                    }
+                    safeSetState(() {
+                      if (dx1 != dx1End) {
+                        dx2End = ((screenWidth * .9) * .05) / 2;
+                        dy2End = dy1;
+                        heightCard2End = (screenHeight * .7) * .75;
+                        widthCard2End = (screenWidth * .9) * .95;
+                      }
+                    });
+                  },
+                  child: Material(
+                    elevation: widget.elevation,
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(widget.borderRadius)),
+                    clipBehavior: Clip.antiAlias,
+                    child: SizedBox(
+                      height: heightCard1,
+                      width: widthCard1,
+                      child: Stack(
+                        children: <Widget>[
+                          stackChildren[0],
+                          if (widget.onSwipedLeftAppear != null)
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: duration),
+                              child: Opacity(
+                                opacity: swipedCardLeftOpacity,
+                                child: widget.onSwipedLeftAppear,
+                              ),
+                            ),
+                          if (widget.onSwipedRightAppear != null)
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: duration),
+                              child: Opacity(
+                                opacity: swipedCardRightOpacity,
+                                child: widget.onSwipedRightAppear,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    builder: (context, double dx1a, card) {
-                      dx1b = dx1a;
-                      return Transform.translate(
-                        offset: Offset(dx1b, dy1),
-                        child: GestureDetector(
-                          onDoubleTap: onDoubleTap,
-                          onHorizontalDragStart: (DragStartDetails details) {
-                            setState(() {
-                              dx1 = details.globalPosition.dx - screenWidth / 2;
-                              dx1End = dx1;
-                              if (dx1 > 0) {
-                                if (dx1 < screenWidth / 2) {
-                                  swipedCardRightOpacity = dx1 / screenWidth;
-                                } else {
-                                  swipedCardRightOpacity = 1;
-                                }
-                                swipedCardLeftOpacity = 0;
-                              } else if (dx1 < 0) {
-                                if (dx1.abs() < screenWidth / 2) {
-                                  swipedCardLeftOpacity =
-                                      dx1.abs() / screenWidth;
-                                } else {
-                                  swipedCardLeftOpacity = 1;
-                                }
-                                swipedCardRightOpacity = 0;
+                  ),
+                  builder: (context, double dx1a, card) {
+                    dx1b = dx1a;
+                    return Transform.translate(
+                      offset: Offset(dx1b, dy1),
+                      child: GestureDetector(
+                        onDoubleTap: widget.onDoubleTap,
+                        onHorizontalDragStart: (DragStartDetails details) {
+                          setState(() {
+                            dx1 = details.globalPosition.dx - screenWidth / 2;
+                            dx1End = dx1;
+                            if (dx1 > 0) {
+                              if (dx1 < screenWidth / 2) {
+                                swipedCardRightOpacity = dx1 / screenWidth;
                               } else {
-                                swipedCardLeftOpacity = 0;
-                                swipedCardRightOpacity = 0;
-                              }
-                              if (duration == 0) duration = 200;
-                            });
-                          },
-                          onHorizontalDragUpdate: (DragUpdateDetails details) {
-                            setState(() {
-                              dx1 = details.globalPosition.dx - screenWidth / 2;
-                              dx1End = dx1;
-                              if (dx1 > 0) {
-                                if (dx1 < screenWidth / 2) {
-                                  swipedCardRightOpacity = dx1 / screenWidth;
-                                } else {
-                                  swipedCardRightOpacity = 1;
-                                }
-                                swipedCardLeftOpacity = 0;
-                              } else if (dx1 < 0) {
-                                if (dx1.abs() < screenWidth / 2) {
-                                  swipedCardLeftOpacity =
-                                      dx1.abs() / screenWidth;
-                                } else {
-                                  swipedCardLeftOpacity = 1;
-                                }
-                                swipedCardRightOpacity = 0;
-                              } else {
-                                swipedCardLeftOpacity = 0;
-                                swipedCardRightOpacity = 0;
-                              }
-                            });
-                          },
-                          onHorizontalDragEnd: (DragEndDetails details) {
-                            if (details.velocity.pixelsPerSecond.dx >= 1200) {
-                              setState(() {
-                                dx1End = screenWidth;
-                                dx1 = ((screenWidth * .9) * .05) / 2;
                                 swipedCardRightOpacity = 1;
-                                swipedCardLeftOpacity = 0;
-                              });
-                            } else if (details.velocity.pixelsPerSecond.dx <=
-                                -1200) {
-                              setState(() {
-                                dx1End = -screenWidth;
-                                dx1 = ((screenWidth * .9) * .05) / 2;
+                              }
+                              swipedCardLeftOpacity = 0;
+                            } else if (dx1 < 0) {
+                              if (dx1.abs() < screenWidth / 2) {
+                                swipedCardLeftOpacity = dx1.abs() / screenWidth;
+                              } else {
                                 swipedCardLeftOpacity = 1;
-                                swipedCardRightOpacity = 0;
-                              });
+                              }
+                              swipedCardRightOpacity = 0;
                             } else {
-                              setState(() {
-                                dx1 = ((screenWidth * .9) * .05) / 2;
-                                dx1End = dx1;
-                                swipedCardLeftOpacity = 0;
-                                swipedCardRightOpacity = 0;
-                              });
+                              swipedCardLeftOpacity = 0;
+                              swipedCardRightOpacity = 0;
                             }
-                          },
-                          child: card!,
-                        ),
-                      );
-                    },
-                  )
-                : Container(),
-          ],
-        ),
-      );
-    });
-  }
-
-  void initCards() {
-    if (widget.children != null) {
-      cards = widget.children!;
-      cards.add(null);
-      cards.add(null);
-      cards.add(null);
-      if (cards.length < counter) counter = 0;
-      card1 = cards[counter];
-      card2 = cards[counter + 1];
-      card3 = cards[counter + 2];
-    } else {
-      cards = [null, null, null];
-    }
+                            if (duration == 0) duration = 200;
+                          });
+                        },
+                        onHorizontalDragUpdate: (DragUpdateDetails details) {
+                          setState(() {
+                            dx1 = details.globalPosition.dx - screenWidth / 2;
+                            dx1End = dx1;
+                            if (dx1 > 0) {
+                              if (dx1 < screenWidth / 2) {
+                                swipedCardRightOpacity = dx1 / screenWidth;
+                              } else {
+                                swipedCardRightOpacity = 1;
+                              }
+                              swipedCardLeftOpacity = 0;
+                            } else if (dx1 < 0) {
+                              if (dx1.abs() < screenWidth / 2) {
+                                swipedCardLeftOpacity = dx1.abs() / screenWidth;
+                              } else {
+                                swipedCardLeftOpacity = 1;
+                              }
+                              swipedCardRightOpacity = 0;
+                            } else {
+                              swipedCardLeftOpacity = 0;
+                              swipedCardRightOpacity = 0;
+                            }
+                          });
+                        },
+                        onHorizontalDragEnd: (DragEndDetails details) {
+                          if (details.velocity.pixelsPerSecond.dx >= 1200) {
+                            setState(() {
+                              dx1End = screenWidth;
+                              dx1 = ((screenWidth * .9) * .05) / 2;
+                              swipedCardRightOpacity = 1;
+                              swipedCardLeftOpacity = 0;
+                            });
+                          } else if (details.velocity.pixelsPerSecond.dx <=
+                              -1200) {
+                            setState(() {
+                              dx1End = -screenWidth;
+                              dx1 = ((screenWidth * .9) * .05) / 2;
+                              swipedCardLeftOpacity = 1;
+                              swipedCardRightOpacity = 0;
+                            });
+                          } else {
+                            setState(() {
+                              dx1 = ((screenWidth * .9) * .05) / 2;
+                              dx1End = dx1;
+                              swipedCardLeftOpacity = 0;
+                              swipedCardRightOpacity = 0;
+                            });
+                          }
+                        },
+                        child: card!,
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

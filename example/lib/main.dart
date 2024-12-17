@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: EazySwipeableCards(
+        child: EazySwipeableCards<MaterialColor>(
           screenHeight: MediaQuery.of(context).size.height,
           screenWidth: MediaQuery.of(context).size.width,
           onSwipeLeft: () {
@@ -81,11 +81,21 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           borderRadius: 12.0,
           elevation: 5.0,
-          children: [
-            Container(color: Colors.orange),
-            Container(color: Colors.green),
-            Container(color: Colors.blue),
+          items: const <MaterialColor>[
+            Colors.orange,
+            Colors.green,
+            Colors.blue,
+            Colors.orange,
+            Colors.green,
+            Colors.blue,
+            Colors.orange,
+            Colors.green,
+            Colors.blue,
           ],
+          pageSize: 9,
+          builder: (MaterialColor item, BuildContext _) => Container(
+            color: item,
+          ),
         ),
       ),
     );

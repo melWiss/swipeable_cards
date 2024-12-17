@@ -1,6 +1,8 @@
 ### 0.0.4
 
-* Marked screenHeight & screenWidth for deprecation
+* Marked screenHeight & screenWidth for deprecation.
+* Removed the children parameter and added a builder method instead.
+* Added pagination params
 
 ## 0.0.3
 
