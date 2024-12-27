@@ -42,62 +42,76 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: EazySwipeableCards<MaterialColor>(
-          screenHeight: MediaQuery.of(context).size.height,
-          screenWidth: MediaQuery.of(context).size.width,
-          onSwipeLeft: () {
-            setState(() {
-              counter--;
-            });
-          },
-          onSwipeRight: () {
-            setState(() {
-              counter++;
-            });
-          },
-          onDoubleTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Card double-tapped!')),
-            );
-          },
-          onSwipedLeftAppear: const Material(
-            color: Colors.red,
-            child: Center(
-              child: Icon(
-                Icons.thumb_down,
-                size: 100,
-                color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: EazySwipeableCards2<(MaterialColor, int, int)>(
+            cardHeight: 400,
+            cardWidth: MediaQuery.sizeOf(context).width,
+            shownCards: 3,
+            cardDistance: 80,
+            onSwipeLeft: () {
+              setState(() {
+                counter--;
+              });
+            },
+            onSwipeRight: () {
+              setState(() {
+                counter++;
+              });
+            },
+            onDoubleTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Card double-tapped!')),
+              );
+            },
+            onSwipedLeftAppear: const Material(
+              color: Colors.red,
+              child: Center(
+                child: Icon(
+                  Icons.thumb_down,
+                  size: 100,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          onSwipedRightAppear: const Material(
-            color: Colors.green,
-            child: Center(
-              child: Icon(
-                Icons.thumb_up,
-                size: 100,
-                color: Colors.white,
+            onSwipedRightAppear: const Material(
+              color: Colors.green,
+              child: Center(
+                child: Icon(
+                  Icons.thumb_up,
+                  size: 100,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          borderRadius: 12.0,
-          elevation: 5.0,
-          pageSize: 6,
-          pageThreshold: 3,
-          onLoadMore: ({required pageNumber, required pageSize}) async {
-            logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
-            await Future.delayed(const Duration(seconds: 3));
-            return Future.value([
-              Colors.orange,
-              Colors.green,
-              Colors.blue,
-              Colors.orange,
-              Colors.green,
-              Colors.blue,
-            ]);
-          },
-          builder: (MaterialColor item, BuildContext _) => Container(
-            color: item,
+            borderRadius: 22.0,
+            elevation: 5.0,
+            pageSize: 6,
+            pageThreshold: 3,
+            onLoadMore: ({required pageNumber, required pageSize}) {
+              logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
+              return Future.value([
+                (Colors.orange, 0, pageNumber),
+                (Colors.green, 1, pageNumber),
+                (Colors.blue, 2, pageNumber),
+                (Colors.orange, 3, pageNumber),
+                (Colors.green, 4, pageNumber),
+                (Colors.blue, 5, pageNumber),
+              ]);
+            },
+            builder: ((MaterialColor, int, int) item, BuildContext _) => Container(
+              color: item.$1,
+              child: Center(
+                child: Text(
+                  'Card ${item.$2}, Page ${item.$3}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

@@ -15,10 +15,8 @@ class EazySwipeableCards<T> extends StatefulWidget {
   /// The [builder] parameter provides a method that will build the cards
   /// depending on the [T] items.
   const EazySwipeableCards({
-    required this.screenHeight,
-    required this.screenWidth,
     required this.builder,
-    this.onLoadMore,
+    required this.onLoadMore,
     super.key,
     this.onSwipeLeft,
     this.onSwipeRight,
@@ -31,14 +29,6 @@ class EazySwipeableCards<T> extends StatefulWidget {
     this.pageThreshold = 0,
   });
 
-  /// The height of the screen, used to size the cards.
-  @Deprecated("The widget will now take the whole available space.")
-  final double screenHeight;
-
-  /// The width of the screen, used to size the cards.
-  @Deprecated("The widget will now take the whole available space.")
-  final double screenWidth;
-
   /// This parameter will be used to determine when to call the builder function.
   /// If the number of cards left in the stack is equal to [pageThreshold] then
   /// the [onLoadMore] items will be called.
@@ -50,7 +40,7 @@ class EazySwipeableCards<T> extends StatefulWidget {
   /// This method will be called when the [EazySwipeableCards] needs more cards
   /// to the stack. If this parameter is null, the pagination won't work.
   final Future<List<T>> Function(
-      {required int pageSize, required int pageNumber})? onLoadMore;
+      {required int pageSize, required int pageNumber}) onLoadMore;
 
   /// A builder method to build the cards.
   final Widget Function(T item, BuildContext context) builder;
@@ -154,9 +144,9 @@ class _SwipeableCardsState<T> extends State<EazySwipeableCards<T>> {
   }
 
   void safelyCallOnload(int pageIndex) {
-    if (pageIndex != latestPageIndexCall && widget.onLoadMore != null) {
+    if (pageIndex != latestPageIndexCall) {
       latestPageIndexCall = pageIndex;
-      widget.onLoadMore!(pageNumber: pageIndex, pageSize: widget.pageSize).then(
+      widget.onLoadMore(pageNumber: pageIndex, pageSize: widget.pageSize).then(
         (value) {
           if (value.isNotEmpty) {
             items.addAll(value);
