@@ -56,7 +56,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
     super.initState();
     onLoadMore();
     currentIndex.addListener(() {
-      if (currentIndex.value < widget.pageThreshold) {
+      if (currentIndex.value >= widget.pageThreshold) {
         onLoadMore();
       }
     });
@@ -97,8 +97,8 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                       elevation: widget.elevation,
                       borderRadius: BorderRadius.circular(widget.borderRadius),
                       clipBehavior: Clip.antiAlias,
-                      child:
-                          widget.builder(data[i - currentIndex.value], context),
+                      child: widget.builder(
+                          data[(i + currentIndex.value).abs()], context),
                     ),
                   ),
                 ),
@@ -108,13 +108,16 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                   frontCardXPosition.value += details.primaryDelta!;
                 },
                 onHorizontalDragEnd: (details) {
-                  if (frontCardXPosition.value > 100) {
-                    widget.onSwipeRight?.call();
-                  } else if (frontCardXPosition.value < -100) {
-                    widget.onSwipeLeft?.call();
+                  if (details.velocity.pixelsPerSecond.dx.abs() > 1000) {
+                    if (frontCardXPosition.value > 100) {
+                      widget.onSwipeRight?.call();
+                    } else if (frontCardXPosition.value < -100) {
+                      widget.onSwipeLeft?.call();
+                    }
+                    currentIndex.value++;
+                    print(details);
                   }
                   frontCardXPosition.value = 0;
-                  print(details);
                 },
                 child: Transform.translate(
                   offset:
