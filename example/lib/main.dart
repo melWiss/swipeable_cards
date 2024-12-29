@@ -47,8 +47,8 @@ class _MyHomePageState extends State<MyHomePage> {
           child: EazySwipeableCards2<(MaterialColor, int, int)>(
             cardHeight: 400,
             cardWidth: MediaQuery.sizeOf(context).width,
-            shownCards: 3,
-            cardDistance: 80,
+            shownCards: 9,
+            cardDistance: 75,
             onSwipeLeft: () {
               setState(() {
                 counter--;
@@ -86,17 +86,31 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             borderRadius: 22.0,
             elevation: 5.0,
-            pageSize: 6,
-            pageThreshold: 3,
+            pageSize: 20,
+            pageThreshold: 10,
             onLoadMore: ({required pageNumber, required pageSize}) {
               logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
               return Future.value([
                 (Colors.orange, 0, pageNumber),
                 (Colors.green, 1, pageNumber),
                 (Colors.blue, 2, pageNumber),
-                (Colors.orange, 3, pageNumber),
-                (Colors.green, 4, pageNumber),
-                (Colors.blue, 5, pageNumber),
+                (Colors.red, 3, pageNumber),
+                (Colors.pink, 4, pageNumber),
+                (Colors.orange, 0, pageNumber),
+                (Colors.green, 1, pageNumber),
+                (Colors.blue, 2, pageNumber),
+                (Colors.red, 3, pageNumber),
+                (Colors.pink, 4, pageNumber),
+                (Colors.orange, 0, pageNumber),
+                (Colors.green, 1, pageNumber),
+                (Colors.blue, 2, pageNumber),
+                (Colors.red, 3, pageNumber),
+                (Colors.pink, 4, pageNumber),
+                (Colors.orange, 0, pageNumber),
+                (Colors.green, 1, pageNumber),
+                (Colors.blue, 2, pageNumber),
+                (Colors.red, 3, pageNumber),
+                (Colors.pink, 4, pageNumber),
               ]);
             },
             builder: ((MaterialColor, int, int) item, BuildContext _) => Container(
