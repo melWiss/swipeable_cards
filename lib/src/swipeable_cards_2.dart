@@ -105,9 +105,9 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                 },
                 onHorizontalDragEnd: (details) {
                   if (details.velocity.pixelsPerSecond.dx.abs() > 1000) {
-                    if (frontCardXPosition.value > 100) {
+                    if (details.velocity.pixelsPerSecond.dx > 1000) {
                       widget.onSwipeRight?.call();
-                    } else if (frontCardXPosition.value < -100) {
+                    } else if (details.velocity.pixelsPerSecond.dx < -1000) {
                       widget.onSwipeLeft?.call();
                     }
                     currentIndex.value++;
