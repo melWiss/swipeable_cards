@@ -1,3 +1,4 @@
+import 'package:eazy_swipeable_cards/src/logger.dart';
 import 'package:eazy_swipeable_cards/src/swipeable_cards.dart';
 import 'package:flutter/material.dart';
 
@@ -46,6 +47,7 @@ class EazySwipeableCards2<T> extends EazySwipeableCards<T> {
 }
 
 class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
+  final logger = SwipeableLogger.instance;
   ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   ValueNotifier<double> frontCardXPosition = ValueNotifier(0);
   int currentPage = 0;
@@ -115,8 +117,8 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                       widget.onSwipeLeft?.call();
                     }
                     currentIndex.value++;
-                    print(details);
                   }
+                  logger.log(details.toString());
                   frontCardXPosition.value = 0;
                 },
                 child: Transform.translate(
