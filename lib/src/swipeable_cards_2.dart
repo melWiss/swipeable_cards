@@ -85,23 +85,17 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
           if (currentIndex.value + i < data.length)
             ListenableBuilder(
               listenable: frontCardXPosition,
-              child: Transform(
-                transform: Matrix4.identity()
-                  ..scale(1 - i * 0.1)
-                  ..translate(0.0, -i * widget.cardDistance),
-                alignment: Alignment.center,
-                child: SizedBox(
-                  height: widget.cardHeight,
-                  width: widget.cardWidth,
-                  child: Opacity(
-                    opacity: widget.behindCardsShouldBeOpaque ? 1 : 1 - i * 0.1,
-                    child: Material(
-                      elevation: widget.elevation,
-                      borderRadius: BorderRadius.circular(widget.borderRadius),
-                      clipBehavior: Clip.antiAlias,
-                      child: widget.builder(
-                          data[(i + currentIndex.value).abs()], context),
-                    ),
+              child: SizedBox(
+                height: widget.cardHeight,
+                width: widget.cardWidth,
+                child: Opacity(
+                  opacity: widget.behindCardsShouldBeOpaque ? 1 : 1 - i * 0.1,
+                  child: Material(
+                    elevation: widget.elevation,
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                    clipBehavior: Clip.antiAlias,
+                    child: widget.builder(
+                        data[(i + currentIndex.value).abs()], context),
                   ),
                 ),
               ),
@@ -121,9 +115,12 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                   logger.log(details.toString());
                   frontCardXPosition.value = 0;
                 },
-                child: Transform.translate(
-                  offset:
-                      i > 0 ? Offset.zero : Offset(frontCardXPosition.value, 0),
+                child: Transform(
+                  transform: Matrix4.identity()
+                    ..scale(1 - i * 0.1)
+                    ..translate(i > 0 ? 0.0 : frontCardXPosition.value,
+                        -i * widget.cardDistance),
+                  alignment: Alignment.center,
                   child: child!,
                 ),
               ),
