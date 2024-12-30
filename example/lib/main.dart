@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:eazy_swipeable_cards/eazy_swipeable_cards.dart';
+import 'package:http/http.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,9 +15,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'EazySwipeableCards Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+      theme: ThemeData.dark().copyWith(
+        colorScheme: const ColorScheme.dark(),
       ),
       home: const MyHomePage(title: 'Swipeable Cards Demo'),
     );
@@ -44,9 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: EazySwipeableCards2<(MaterialColor, int, int)>(
-            cardHeight: 400,
-            cardWidth: double.infinity,
+          child: EazySwipeableCards2<String>(
+            cardWidth: MediaQuery.sizeOf(context).width * 0.8,
+            cardHeight: MediaQuery.sizeOf(context).width * 0.8,
             shownCards: 7,
             cardDistance: 120,
             behindCardsShouldBeOpaque: false,
@@ -87,45 +89,19 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             borderRadius: 22.0,
             elevation: 5.0,
-            pageSize: 20,
-            pageThreshold: 10,
-            onLoadMore: ({required pageNumber, required pageSize}) {
+            pageSize: 986,
+            pageThreshold: 500,
+            onLoadMore: ({required pageNumber, required pageSize}) async {
               logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
-              return Future.value([
-                (Colors.orange, 0, pageNumber),
-                (Colors.green, 1, pageNumber),
-                (Colors.blue, 2, pageNumber),
-                (Colors.red, 3, pageNumber),
-                (Colors.pink, 4, pageNumber),
-                (Colors.orange, 5, pageNumber),
-                (Colors.green, 6, pageNumber),
-                (Colors.blue, 7, pageNumber),
-                (Colors.red, 8, pageNumber),
-                (Colors.pink, 9, pageNumber),
-                (Colors.orange, 10, pageNumber),
-                (Colors.green, 11, pageNumber),
-                (Colors.blue, 12, pageNumber),
-                (Colors.red, 13, pageNumber),
-                (Colors.pink, 14, pageNumber),
-                (Colors.orange, 15, pageNumber),
-                (Colors.green, 16, pageNumber),
-                (Colors.blue, 17, pageNumber),
-                (Colors.red, 18, pageNumber),
-                (Colors.pink, 19, pageNumber),
-              ]);
+              const base = "https://meme-server.deno.dev";
+              var response = await get(Uri.parse("$base/api/images"));
+              var data = jsonDecode(response.body);
+              List memes = List.from(data);
+              return memes.map((e) => '$base${e['image']}').toList();
             },
-            builder: ((MaterialColor, int, int) item, BuildContext _) => Container(
-              color: item.$1,
-              child: Center(
-                child: Text(
-                  'Card ${item.$2}, Page ${item.$3}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            builder: (String item, BuildContext _) => Image.network(
+              item,
+              fit: BoxFit.cover,
             ),
           ),
         ),
