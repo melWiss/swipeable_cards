@@ -74,11 +74,7 @@ class VariablesController {
   }
 
   late final StreamController<Variables> _streamController =
-      StreamController<Variables>.broadcast(
-    onListen: () {
-      _streamController.add(_variables);
-    },
-  );
+      StreamController<Variables>();
 
   Stream<Variables> get stream => _streamController.stream;
 
