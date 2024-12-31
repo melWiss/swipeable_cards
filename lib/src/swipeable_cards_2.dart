@@ -165,91 +165,140 @@ class SwipeableCard<T> extends StatelessWidget {
           controller.updateVariables(frontCardXPosition: 0);
         }
       },
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(
-          begin: 0,
-          end: variables.animationCoeffiecient,
-        ),
-        curve: Curves.easeIn,
-        duration: Duration(milliseconds: variables.durationInMilliSeconds),
-        onEnd: () {
-          if (index == 0 && variables.animationCoeffiecient == 1) {
-            controller.updateVariables(
-              durationInMilliSeconds: 0,
-              animationCoeffiecient: 0,
-              frontCardXPosition: 0,
-            );
-            controller.onLoadMore();
-          }
-        },
-        builder: (context, coeff, _) {
-          return TweenAnimationBuilder<double>(
-              tween: Tween(
-                begin: controller.variables.oldFrontCardXPosition,
-                end: controller.variables.frontCardXPosition,
-              ),
-              onEnd: () {
-                controller.updateVariables(
-                  oldFrontCardXPosition:
-                      controller.variables.frontCardXPosition,
-                );
-              },
-              duration: Duration(
-                  milliseconds: controller.variables.durationInMilliSeconds),
-              builder: (context, dx, _) {
-                return Transform(
-                  transform: Matrix4.identity()
-                    ..scale(1 - (index - coeff) * 0.1)
-                    ..translate(
-                      index > 0 ? 0.0 : dx,
-                      -(index - coeff) * widget.cardDistance,
-                    ),
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    height: widget.cardHeight,
-                    width: widget.cardWidth,
-                    child: Opacity(
-                      opacity: widget.behindCardsShouldBeOpaque
-                          ? 1
-                          : (1 - index * 0.1),
-                      child: Material(
-                        elevation: widget.elevation,
-                        borderRadius:
-                            BorderRadius.circular(widget.borderRadius),
-                        clipBehavior: Clip.antiAlias,
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: widget.builder(
-                                controller.variables.data[index],
-                                context,
-                              ),
-                            ),
-                            if (index == 0 &&
-                                widget.onSwipedRightAppear != null &&
-                                controller.variables.frontCardXPosition > 0)
-                              SwipeableCardOpacity(
-                                controller: controller,
-                                widget: widget,
-                                isRight: true,
-                              ),
-                            if (index == 0 &&
-                                widget.onSwipedLeftAppear != null &&
-                                controller.variables.frontCardXPosition < 0)
-                              SwipeableCardOpacity(
-                                controller: controller,
-                                widget: widget,
-                                isRight: false,
-                              ),
-                          ],
-                        ),
+      child: CardAnimation(
+        index: index,
+        controller: controller,
+        variables: variables,
+        widget: widget,
+      ),
+    );
+  }
+}
+
+class CardAnimation<T> extends StatelessWidget {
+  const CardAnimation({
+    super.key,
+    required this.index,
+    required this.controller,
+    required this.variables,
+    required this.widget,
+  });
+
+  final int index;
+  final VariablesController controller;
+  final Variables variables;
+  final EazySwipeableCards2<T> widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(
+        begin: 0,
+        end: variables.animationCoeffiecient,
+      ),
+      curve: Curves.easeIn,
+      duration: Duration(milliseconds: variables.durationInMilliSeconds),
+      onEnd: () {
+        if (index == 0 && variables.animationCoeffiecient == 1) {
+          controller.updateVariables(
+            durationInMilliSeconds: 0,
+            animationCoeffiecient: 0,
+            frontCardXPosition: 0,
+          );
+          controller.onLoadMore();
+        }
+      },
+      builder: (context, coeff, _) {
+        return CardPositionAnimation(
+          index: index,
+          controller: controller,
+          variables: variables,
+          widget: widget,
+          coeff: coeff,
+        );
+      },
+    );
+  }
+}
+
+class CardPositionAnimation<T> extends StatelessWidget {
+  const CardPositionAnimation({
+    super.key,
+    required this.index,
+    required this.controller,
+    required this.variables,
+    required this.widget,
+    required this.coeff,
+  });
+
+  final int index;
+  final VariablesController controller;
+  final Variables variables;
+  final EazySwipeableCards2<T> widget;
+  final double coeff;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(
+        begin: controller.variables.oldFrontCardXPosition,
+        end: controller.variables.frontCardXPosition,
+      ),
+      onEnd: () {
+        controller.updateVariables(
+          oldFrontCardXPosition: controller.variables.frontCardXPosition,
+        );
+      },
+      duration: Duration(milliseconds: controller.variables.durationInMilliSeconds),
+      builder: (context, dx, _) {
+        return Transform(
+          transform: Matrix4.identity()
+            ..scale(1 - (index - coeff) * 0.1)
+            ..translate(
+              index > 0 ? 0.0 : dx,
+              -(index - coeff) * widget.cardDistance,
+            ),
+          alignment: Alignment.center,
+          child: SizedBox(
+            height: widget.cardHeight,
+            width: widget.cardWidth,
+            child: Opacity(
+              opacity: widget.behindCardsShouldBeOpaque ? 1 : (1 - index * 0.1),
+              child: Material(
+                elevation: widget.elevation,
+                borderRadius: BorderRadius.circular(widget.borderRadius),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: widget.builder(
+                        controller.variables.data[index],
+                        context,
                       ),
                     ),
-                  ),
-                );
-              });
-        },
-      ),
+                    if (index == 0 &&
+                        widget.onSwipedRightAppear != null &&
+                        controller.variables.frontCardXPosition > 0)
+                      SwipeableCardOpacity(
+                        controller: controller,
+                        widget: widget,
+                        isRight: true,
+                      ),
+                    if (index == 0 &&
+                        widget.onSwipedLeftAppear != null &&
+                        controller.variables.frontCardXPosition < 0)
+                      SwipeableCardOpacity(
+                        controller: controller,
+                        widget: widget,
+                        isRight: false,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

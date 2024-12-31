@@ -94,6 +94,13 @@ class _MyHomePageState extends State<MyHomePage> {
             pageThreshold: 11,
             onLoadMore: ({required pageNumber, required pageSize}) async {
               logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'pageNumber: $pageNumber;\tpageSize: $pageSize')),
+                );
+              });
               const base = "https://meme-server.deno.dev";
               var response = await get(Uri.parse("$base/api/images"));
               var data = jsonDecode(response.body);
