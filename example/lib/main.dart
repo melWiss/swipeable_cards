@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: EazySwipeableCards2<String>(
             cardWidth: MediaQuery.sizeOf(context).width * 0.8,
             cardHeight: MediaQuery.sizeOf(context).width * 0.8,
-            shownCards: 7,
+            shownCards: 10,
             cardDistance: 120,
             behindCardsShouldBeOpaque: false,
             onSwipeLeft: () {

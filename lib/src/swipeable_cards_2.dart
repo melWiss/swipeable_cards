@@ -65,15 +65,17 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
   }
 
   Future<void> onLoadMore({bool initial = false}) async {
-    if (_controller.variables.currentIndex >= widget.pageThreshold || initial) {
+    if (data.isNotEmpty) {
+      data.removeAt(0);
+    }
+    if (data.length < widget.pageThreshold || initial) {
       final newData = await widget.onLoadMore(
         pageNumber: currentPage++,
         pageSize: widget.pageSize,
       );
       if (newData.isNotEmpty) {
-        data =
-            data.sublist(_controller.variables.currentIndex) + newData.toList();
-        _controller.updateVariables(currentIndex: 0);
+        data = data + newData.toList();
+        _controller.updateVariables();
       }
     }
   }
@@ -87,7 +89,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
           return Stack(
             children: [
               for (int i = widget.shownCards - 1; i >= 0; i--)
-                if (_controller.variables.currentIndex + i < data.length)
+                if (i < data.length)
                   GestureDetector(
                     onHorizontalDragUpdate: (details) {
                       _controller.updateVariables(
@@ -119,7 +121,6 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                             animationCoeffiecient: 1,
                           );
                         }
-                        onLoadMore();
                       } else {
                         _controller.updateVariables(frontCardXPosition: 0);
                       }
@@ -138,8 +139,8 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                             durationInMilliSeconds: 0,
                             animationCoeffiecient: 0,
                             frontCardXPosition: 0,
-                            currentIndex: variables.currentIndex + 1,
                           );
+                          onLoadMore();
                         }
                       },
                       builder: (context, coeff, _) {
@@ -163,10 +164,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                                 borderRadius:
                                     BorderRadius.circular(widget.borderRadius),
                                 clipBehavior: Clip.antiAlias,
-                                child: widget.builder(
-                                  data[(i + variables.currentIndex).abs()],
-                                  context,
-                                ),
+                                child: widget.builder(data[i], context),
                               ),
                             ),
                           ),
