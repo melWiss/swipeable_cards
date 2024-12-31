@@ -68,100 +68,145 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Variables>(
-        stream: _controller.stream,
-        builder: (context, snapshot) {
-          final variables = snapshot.data ?? _controller.variables;
-          return Stack(
-            children: [
-              for (int i = widget.shownCards - 1; i >= 0; i--)
-                if (i < _controller.variables.data.length)
-                  GestureDetector(
-                    onHorizontalDragUpdate: (details) {
-                      _controller.updateVariables(
-                        frontCardXPosition: variables.frontCardXPosition +
-                            details.primaryDelta!,
-                      );
-                    },
-                    onHorizontalDragEnd: (details) {
-                      if (details.velocity.pixelsPerSecond.dx.abs() > 1000) {
-                        if (details.velocity.pixelsPerSecond.dx > 1000) {
-                          widget.onSwipeRight?.call();
-                          _controller.updateVariables(
-                            frontCardXPosition:
-                                MediaQuery.sizeOf(context).width +
-                                    widget.cardWidth * 2,
-                            durationInMilliSeconds:
-                                widget.cardsAnimationInMilliseconds,
-                            animationCoeffiecient: 1,
-                          );
-                        } else if (details.velocity.pixelsPerSecond.dx <
-                            -1000) {
-                          widget.onSwipeLeft?.call();
-                          _controller.updateVariables(
-                            frontCardXPosition:
-                                -(MediaQuery.sizeOf(context).width +
-                                    widget.cardWidth * 2),
-                            durationInMilliSeconds:
-                                widget.cardsAnimationInMilliseconds,
-                            animationCoeffiecient: 1,
-                          );
-                        }
-                      } else {
-                        _controller.updateVariables(frontCardXPosition: 0);
+      stream: _controller.stream,
+      builder: (context, snapshot) {
+        final variables = snapshot.data ?? _controller.variables;
+        return Stack(
+          children: [
+            for (int i = widget.shownCards - 1; i >= 0; i--)
+              if (i < _controller.variables.data.length)
+                GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    _controller.updateVariables(
+                      frontCardXPosition:
+                          variables.frontCardXPosition + details.primaryDelta!,
+                    );
+                  },
+                  onHorizontalDragEnd: (details) {
+                    if (details.velocity.pixelsPerSecond.dx.abs() > 1000) {
+                      if (details.velocity.pixelsPerSecond.dx > 1000) {
+                        widget.onSwipeRight?.call();
+                        _controller.updateVariables(
+                          frontCardXPosition: MediaQuery.sizeOf(context).width +
+                              widget.cardWidth * 2,
+                          durationInMilliSeconds:
+                              widget.cardsAnimationInMilliseconds,
+                          animationCoeffiecient: 1,
+                        );
+                      } else if (details.velocity.pixelsPerSecond.dx < -1000) {
+                        widget.onSwipeLeft?.call();
+                        _controller.updateVariables(
+                          frontCardXPosition:
+                              -(MediaQuery.sizeOf(context).width +
+                                  widget.cardWidth * 2),
+                          durationInMilliSeconds:
+                              widget.cardsAnimationInMilliseconds,
+                          animationCoeffiecient: 1,
+                        );
+                      }
+                    } else {
+                      _controller.updateVariables(frontCardXPosition: 0);
+                    }
+                  },
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(
+                      begin: 0,
+                      end: variables.animationCoeffiecient,
+                    ),
+                    curve: Curves.easeIn,
+                    duration: Duration(
+                        milliseconds: variables.durationInMilliSeconds),
+                    onEnd: () {
+                      if (i == 0 && variables.animationCoeffiecient == 1) {
+                        _controller.updateVariables(
+                          durationInMilliSeconds: 0,
+                          animationCoeffiecient: 0,
+                          frontCardXPosition: 0,
+                        );
+                        _controller.onLoadMore();
                       }
                     },
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(
-                        begin: 0,
-                        end: variables.animationCoeffiecient,
-                      ),
-                      curve: Curves.easeIn,
-                      duration: Duration(
-                          milliseconds: variables.durationInMilliSeconds),
-                      onEnd: () {
-                        if (i == 0 && variables.animationCoeffiecient == 1) {
-                          _controller.updateVariables(
-                            durationInMilliSeconds: 0,
-                            animationCoeffiecient: 0,
-                            frontCardXPosition: 0,
-                          );
-                          _controller.onLoadMore();
-                        }
-                      },
-                      builder: (context, coeff, _) {
-                        return Transform(
-                          transform: Matrix4.identity()
-                            ..scale(1 - (i - coeff) * 0.1)
-                            ..translate(
-                              i > 0 ? 0.0 : variables.frontCardXPosition,
-                              -(i - coeff) * widget.cardDistance,
-                            ),
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            height: widget.cardHeight,
-                            width: widget.cardWidth,
-                            child: Opacity(
-                              opacity: widget.behindCardsShouldBeOpaque
-                                  ? 1
-                                  : (1 - i * 0.1),
-                              child: Material(
-                                elevation: widget.elevation,
-                                borderRadius:
-                                    BorderRadius.circular(widget.borderRadius),
-                                clipBehavior: Clip.antiAlias,
-                                child: widget.builder(
-                                  _controller.variables.data[i],
-                                  context,
-                                ),
+                    builder: (context, coeff, _) {
+                      return Transform(
+                        transform: Matrix4.identity()
+                          ..scale(1 - (i - coeff) * 0.1)
+                          ..translate(
+                            i > 0 ? 0.0 : variables.frontCardXPosition,
+                            -(i - coeff) * widget.cardDistance,
+                          ),
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          height: widget.cardHeight,
+                          width: widget.cardWidth,
+                          child: Opacity(
+                            opacity: widget.behindCardsShouldBeOpaque
+                                ? 1
+                                : (1 - i * 0.1),
+                            child: Material(
+                              elevation: widget.elevation,
+                              borderRadius:
+                                  BorderRadius.circular(widget.borderRadius),
+                              clipBehavior: Clip.antiAlias,
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: widget.builder(
+                                      _controller.variables.data[i],
+                                      context,
+                                    ),
+                                  ),
+                                  if (i == 0 &&
+                                      widget.onSwipedRightAppear != null &&
+                                      _controller.variables.frontCardXPosition >
+                                          0)
+                                    Positioned.fill(
+                                      child: Opacity(
+                                        opacity: _max(
+                                            ((_controller.variables
+                                                                .frontCardXPosition +
+                                                            10) /
+                                                        MediaQuery.sizeOf(
+                                                                context)
+                                                            .width +
+                                                    .2)
+                                                .abs(),
+                                            1),
+                                        child: widget.onSwipedRightAppear,
+                                      ),
+                                    ),
+                                  if (i == 0 &&
+                                      widget.onSwipedLeftAppear != null &&
+                                      _controller.variables.frontCardXPosition <
+                                          0)
+                                    Positioned.fill(
+                                      child: Opacity(
+                                        opacity: _max(
+                                            ((_controller.variables
+                                                            .frontCardXPosition +
+                                                        10) /
+                                                    MediaQuery.sizeOf(context)
+                                                        .width)
+                                                .abs(),
+                                            1),
+                                        child: widget.onSwipedLeftAppear,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
-            ],
-          );
-        });
+                ),
+          ],
+        );
+      },
+    );
+  }
+
+  double _max(double current, double max) {
+    return current > max ? max : current;
   }
 }
