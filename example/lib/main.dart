@@ -47,11 +47,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: EazySwipeableCards2<String>(
-            cardWidth: MediaQuery.sizeOf(context).width * 0.8,
-            cardHeight: MediaQuery.sizeOf(context).width * 0.8,
+            cardWidth: 400,
+            cardHeight: 400,
             shownCards: 10,
             cardDistance: 120,
             behindCardsShouldBeOpaque: false,
+            cardsAnimationInMilliseconds: 250,
             onSwipeLeft: () {
               setState(() {
                 counter--;

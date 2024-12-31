@@ -21,6 +21,9 @@ class Variables<T> {
   /// the x position of the front card.
   final double frontCardXPosition;
 
+  /// the old x position of the front cards.
+  final double oldFrontCardXPosition;
+
   /// the value of this variable is either 0 or 200.
   final int durationInMilliSeconds;
 
@@ -31,6 +34,7 @@ class Variables<T> {
     required this.pageSize,
     required this.pageThreshold,
     required this.frontCardXPosition,
+    required this.oldFrontCardXPosition,
     required this.durationInMilliSeconds,
     required this.animationCoeffiecient,
     required this.onLoadMore,
@@ -43,6 +47,7 @@ class Variables<T> {
     int? pageThreshold,
     List<T>? data,
     double? frontCardXPosition,
+    double? oldFrontCardXPosition,
     int? durationInMilliSeconds,
     double? animationCoeffiecient,
     int? currentPage,
@@ -57,6 +62,7 @@ class Variables<T> {
       animationCoeffiecient:
           animationCoeffiecient ?? this.animationCoeffiecient,
       currentPage: currentPage ?? this.currentPage,
+      oldFrontCardXPosition: oldFrontCardXPosition ?? this.oldFrontCardXPosition,
       onLoadMore: onLoadMore,
     );
   }
@@ -75,6 +81,7 @@ class VariablesController<T> {
   }) {
     _variables = Variables<T>(
       frontCardXPosition: 0,
+      oldFrontCardXPosition: 0,
       durationInMilliSeconds: 0,
       animationCoeffiecient: 0,
       onLoadMore: onLoadMore,
@@ -98,12 +105,14 @@ class VariablesController<T> {
     int? pageThreshold,
     List<T>? data,
     double? frontCardXPosition,
+    double? oldFrontCardXPosition,
     int? durationInMilliSeconds,
     double? animationCoeffiecient,
     int? currentPage,
   }) {
     _variables = _variables.copyWith(
       frontCardXPosition: frontCardXPosition,
+      oldFrontCardXPosition: oldFrontCardXPosition,
       durationInMilliSeconds: durationInMilliSeconds,
       animationCoeffiecient: animationCoeffiecient,
       data: data,

@@ -9,7 +9,7 @@ class EazySwipeableCards2<T> extends EazySwipeableCards<T> {
     required this.cardWidth,
     required super.builder,
     required super.onLoadMore,
-    this.cardsAnimationInMilliseconds = 200,
+    this.cardsAnimationInMilliseconds = 250,
     this.cardDistance = 30.0,
     this.shownCards = 1,
     this.behindCardsShouldBeOpaque = false,
@@ -175,54 +175,70 @@ class SwipeableCard<T> extends StatelessWidget {
           }
         },
         builder: (context, coeff, _) {
-          return Transform(
-            transform: Matrix4.identity()
-              ..scale(1 - (index - coeff) * 0.1)
-              ..translate(
-                index > 0 ? 0.0 : variables.frontCardXPosition,
-                -(index - coeff) * widget.cardDistance,
+          return TweenAnimationBuilder<double>(
+              tween: Tween(
+                begin: controller.variables.oldFrontCardXPosition,
+                end: controller.variables.frontCardXPosition,
               ),
-            alignment: Alignment.center,
-            child: SizedBox(
-              height: widget.cardHeight,
-              width: widget.cardWidth,
-              child: Opacity(
-                opacity:
-                    widget.behindCardsShouldBeOpaque ? 1 : (1 - index * 0.1),
-                child: Material(
-                  elevation: widget.elevation,
-                  borderRadius: BorderRadius.circular(widget.borderRadius),
-                  clipBehavior: Clip.antiAlias,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: widget.builder(
-                          controller.variables.data[index],
-                          context,
+              onEnd: () {
+                controller.updateVariables(
+                  oldFrontCardXPosition: controller.variables.frontCardXPosition,
+                );
+              },
+              duration: Duration(
+                  milliseconds: controller.variables.durationInMilliSeconds),
+              builder: (context, dx, _) {
+                return Transform(
+                  transform: Matrix4.identity()
+                    ..scale(1 - (index - coeff) * 0.1)
+                    ..translate(
+                      index > 0 ? 0.0 : dx,
+                      -(index - coeff) * widget.cardDistance,
+                    ),
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    height: widget.cardHeight,
+                    width: widget.cardWidth,
+                    child: Opacity(
+                      opacity: widget.behindCardsShouldBeOpaque
+                          ? 1
+                          : (1 - index * 0.1),
+                      child: Material(
+                        elevation: widget.elevation,
+                        borderRadius:
+                            BorderRadius.circular(widget.borderRadius),
+                        clipBehavior: Clip.antiAlias,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: widget.builder(
+                                controller.variables.data[index],
+                                context,
+                              ),
+                            ),
+                            if (index == 0 &&
+                                widget.onSwipedRightAppear != null &&
+                                controller.variables.frontCardXPosition > 0)
+                              SwipeableCardOpacity(
+                                controller: controller,
+                                widget: widget,
+                                isRight: true,
+                              ),
+                            if (index == 0 &&
+                                widget.onSwipedLeftAppear != null &&
+                                controller.variables.frontCardXPosition < 0)
+                              SwipeableCardOpacity(
+                                controller: controller,
+                                widget: widget,
+                                isRight: false,
+                              ),
+                          ],
                         ),
                       ),
-                      if (index == 0 &&
-                          widget.onSwipedRightAppear != null &&
-                          controller.variables.frontCardXPosition > 0)
-                        SwipeableCardOpacity(
-                          controller: controller,
-                          widget: widget,
-                          isRight: true,
-                        ),
-                      if (index == 0 &&
-                          widget.onSwipedLeftAppear != null &&
-                          controller.variables.frontCardXPosition < 0)
-                        SwipeableCardOpacity(
-                          controller: controller,
-                          widget: widget,
-                          isRight: false,
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
-          );
+                );
+              });
         },
       ),
     );
@@ -247,8 +263,7 @@ class SwipeableCardOpacity<T> extends StatelessWidget {
       child: Opacity(
         opacity: _max(
           ((controller.variables.frontCardXPosition + 10) /
-                      MediaQuery.sizeOf(context).width +
-                  (isRight ? .2 : 0))
+                  MediaQuery.sizeOf(context).width)
               .abs(),
           1,
         ),
