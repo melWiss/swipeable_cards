@@ -53,31 +53,16 @@ class EazySwipeableCards2<T> extends EazySwipeableCards<T> {
 
 class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
   final logger = SwipeableLogger.instance;
-  final VariablesController _controller = VariablesController();
-
-  int currentPage = 0;
-  List<T> data = [];
+  late final VariablesController _controller = VariablesController(
+    onLoadMore: widget.onLoadMore,
+    pageSize: widget.pageSize,
+    pageThreshold: widget.pageThreshold,
+  );
 
   @override
   void initState() {
     super.initState();
-    onLoadMore(initial: true);
-  }
-
-  Future<void> onLoadMore({bool initial = false}) async {
-    if (data.isNotEmpty) {
-      data.removeAt(0);
-    }
-    if (data.length < widget.pageThreshold || initial) {
-      final newData = await widget.onLoadMore(
-        pageNumber: currentPage++,
-        pageSize: widget.pageSize,
-      );
-      if (newData.isNotEmpty) {
-        data = data + newData.toList();
-        _controller.updateVariables();
-      }
-    }
+    _controller.onLoadMore(initial: true);
   }
 
   @override
@@ -89,7 +74,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
           return Stack(
             children: [
               for (int i = widget.shownCards - 1; i >= 0; i--)
-                if (i < data.length)
+                if (i < _controller.variables.data.length)
                   GestureDetector(
                     onHorizontalDragUpdate: (details) {
                       _controller.updateVariables(
@@ -140,7 +125,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                             animationCoeffiecient: 0,
                             frontCardXPosition: 0,
                           );
-                          onLoadMore();
+                          _controller.onLoadMore();
                         }
                       },
                       builder: (context, coeff, _) {
@@ -164,7 +149,10 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                                 borderRadius:
                                     BorderRadius.circular(widget.borderRadius),
                                 clipBehavior: Clip.antiAlias,
-                                child: widget.builder(data[i], context),
+                                child: widget.builder(
+                                  _controller.variables.data[i],
+                                  context,
+                                ),
                               ),
                             ),
                           ),

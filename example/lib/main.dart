@@ -89,15 +89,18 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             borderRadius: 22.0,
             elevation: 5.0,
-            pageSize: 986,
-            pageThreshold: 500,
+            pageSize: 20,
+            pageThreshold: 11,
             onLoadMore: ({required pageNumber, required pageSize}) async {
               logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
               const base = "https://meme-server.deno.dev";
               var response = await get(Uri.parse("$base/api/images"));
               var data = jsonDecode(response.body);
               List memes = List.from(data);
-              return memes.map((e) => '$base${e['image']}').toList();
+              return memes.map((e) => '$base${e['image']}').toList().sublist(
+                    pageNumber * pageSize,
+                    pageNumber * pageSize + pageSize,
+                  );
             },
             builder: (String item, BuildContext _) => Image.network(
               item,
