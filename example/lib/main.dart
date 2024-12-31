@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: EazySwipeableCards2<String>(
+          child: EazySwipeableCards<String>(
             cardWidth: 400,
             cardHeight: 400,
             shownCards: 10,
