@@ -27,6 +27,9 @@ class Variables<T> {
   /// the value of this variable is either 0 or 200.
   final int durationInMilliSeconds;
 
+  /// The swipe velocity that will trigger the swipe event (pixels/second).
+  final double swipeVelocity;
+
   /// the value of the coefficient of the card to scale and translate accordingly
   /// it should be 0.0 or 1.0;
   final double animationCoeffiecient;
@@ -39,6 +42,7 @@ class Variables<T> {
     required this.animationCoeffiecient,
     required this.onLoadMore,
     required this.data,
+    required this.swipeVelocity,
     this.currentPage = 0,
   });
 
@@ -51,6 +55,7 @@ class Variables<T> {
     int? durationInMilliSeconds,
     double? animationCoeffiecient,
     int? currentPage,
+    double? swipeVelocity,
   }) {
     return Variables<T>(
       pageSize: pageSize ?? this.pageSize,
@@ -62,7 +67,9 @@ class Variables<T> {
       animationCoeffiecient:
           animationCoeffiecient ?? this.animationCoeffiecient,
       currentPage: currentPage ?? this.currentPage,
-      oldFrontCardXPosition: oldFrontCardXPosition ?? this.oldFrontCardXPosition,
+      oldFrontCardXPosition:
+          oldFrontCardXPosition ?? this.oldFrontCardXPosition,
+      swipeVelocity: swipeVelocity ?? this.swipeVelocity,
       onLoadMore: onLoadMore,
     );
   }
@@ -78,6 +85,7 @@ class VariablesController<T> {
     }) onLoadMore,
     required int pageSize,
     required int pageThreshold,
+    required double swipeVelocity,
   }) {
     _variables = Variables<T>(
       frontCardXPosition: 0,
@@ -87,6 +95,7 @@ class VariablesController<T> {
       onLoadMore: onLoadMore,
       pageSize: pageSize,
       pageThreshold: pageThreshold,
+      swipeVelocity: swipeVelocity,
       data: <T>[],
     );
     _streamController.add(_variables);

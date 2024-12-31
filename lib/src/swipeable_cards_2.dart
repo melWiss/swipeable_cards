@@ -9,6 +9,7 @@ class EazySwipeableCards2<T> extends EazySwipeableCards<T> {
     required this.cardWidth,
     required super.builder,
     required super.onLoadMore,
+    this.swipeVelocity = 1000,
     this.cardsAnimationInMilliseconds = 250,
     this.cardDistance = 30.0,
     this.shownCards = 1,
@@ -47,6 +48,9 @@ class EazySwipeableCards2<T> extends EazySwipeableCards<T> {
   /// The animation duration of the cards in milliseconds.
   final int cardsAnimationInMilliseconds;
 
+  /// The swipe velocity that will trigger the swipe event (pixels/second).
+  final double swipeVelocity;
+
   @override
   State<EazySwipeableCards2<T>> createState() => _EazySwipeableCards2State();
 }
@@ -57,6 +61,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
     onLoadMore: widget.onLoadMore,
     pageSize: widget.pageSize,
     pageThreshold: widget.pageThreshold,
+    swipeVelocity: widget.swipeVelocity,
   );
 
   @override
@@ -135,8 +140,10 @@ class SwipeableCard<T> extends StatelessWidget {
       },
       onDoubleTap: widget.onDoubleTap,
       onHorizontalDragEnd: (details) {
-        if (details.velocity.pixelsPerSecond.dx.abs() > 1000) {
-          if (details.velocity.pixelsPerSecond.dx > 1000) {
+        if (details.velocity.pixelsPerSecond.dx.abs() >
+            controller.variables.swipeVelocity) {
+          if (details.velocity.pixelsPerSecond.dx >
+              controller.variables.swipeVelocity) {
             widget.onSwipeRight?.call();
             controller.updateVariables(
               frontCardXPosition:
@@ -144,7 +151,8 @@ class SwipeableCard<T> extends StatelessWidget {
               durationInMilliSeconds: widget.cardsAnimationInMilliseconds,
               animationCoeffiecient: 1,
             );
-          } else if (details.velocity.pixelsPerSecond.dx < -1000) {
+          } else if (details.velocity.pixelsPerSecond.dx <
+              -controller.variables.swipeVelocity) {
             widget.onSwipeLeft?.call();
             controller.updateVariables(
               frontCardXPosition:
@@ -182,7 +190,8 @@ class SwipeableCard<T> extends StatelessWidget {
               ),
               onEnd: () {
                 controller.updateVariables(
-                  oldFrontCardXPosition: controller.variables.frontCardXPosition,
+                  oldFrontCardXPosition:
+                      controller.variables.frontCardXPosition,
                 );
               },
               duration: Duration(
