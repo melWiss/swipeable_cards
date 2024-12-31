@@ -13,6 +13,10 @@ Key features include:
 - Pagination support for dynamically loading more cards.
 - Animations for swipe gestures.
 - Customizable card styles, including border radius and elevation.
+- Adjustable swipe velocity triggers.
+- Support for multiple visible cards in the stack.
+- Improved performance using the bloc pattern.
+- Logging support for debugging actions.
 
 ---
 
@@ -22,7 +26,7 @@ To use the `EazySwipeableCards` widget in your Flutter project, first, add the `
 
 ```yaml
 dependencies:
-  eazy_swipeable_cards: ^0.0.4
+  eazy_swipeable_cards: ^1.0.0
 ```
 
 Then, import the package:
@@ -36,8 +40,10 @@ import 'package:eazy_swipeable_cards/eazy_swipeable_cards.dart';
 ## Usage Example
 
 ```dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:eazy_swipeable_cards/eazy_swipeable_cards.dart';
+import 'package:http/http.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,9 +56,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'EazySwipeableCards Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+      theme: ThemeData.dark().copyWith(
+        colorScheme: const ColorScheme.dark(),
       ),
       home: const MyHomePage(title: 'Swipeable Cards Demo'),
     );
@@ -80,62 +85,76 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: EazySwipeableCards<MaterialColor>(
-          screenHeight: MediaQuery.of(context).size.height,
-          screenWidth: MediaQuery.of(context).size.width,
-          onSwipeLeft: () {
-            setState(() {
-              counter--;
-            });
-          },
-          onSwipeRight: () {
-            setState(() {
-              counter++;
-            });
-          },
-          onDoubleTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Card double-tapped!')),
-            );
-          },
-          onSwipedLeftAppear: const Material(
-            color: Colors.red,
-            child: Center(
-              child: Icon(
-                Icons.thumb_down,
-                size: 100,
-                color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: EazySwipeableCards<String>(
+            cardWidth: 400,
+            cardHeight: 400,
+            shownCards: 10,
+            cardDistance: 120,
+            behindCardsShouldBeOpaque: false,
+            cardsAnimationInMilliseconds: 250,
+            onSwipeLeft: () {
+              setState(() {
+                counter--;
+              });
+            },
+            onSwipeRight: () {
+              setState(() {
+                counter++;
+              });
+            },
+            onDoubleTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Card double-tapped!')),
+              );
+            },
+            onSwipedLeftAppear: const Material(
+              color: Colors.red,
+              child: Center(
+                child: Icon(
+                  Icons.thumb_down,
+                  size: 100,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          onSwipedRightAppear: const Material(
-            color: Colors.green,
-            child: Center(
-              child: Icon(
-                Icons.thumb_up,
-                size: 100,
-                color: Colors.white,
+            onSwipedRightAppear: const Material(
+              color: Colors.green,
+              child: Center(
+                child: Icon(
+                  Icons.thumb_up,
+                  size: 100,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          borderRadius: 12.0,
-          elevation: 5.0,
-          pageSize: 6,
-          pageThreshold: 3,
-          onLoadMore: ({required pageNumber, required pageSize}) async {
-            logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
-            await Future.delayed(const Duration(seconds: 3));
-            return Future.value([
-              Colors.orange,
-              Colors.green,
-              Colors.blue,
-              Colors.orange,
-              Colors.green,
-              Colors.blue,
-            ]);
-          },
-          builder: (MaterialColor item, BuildContext _) => Container(
-            color: item,
+            borderRadius: 22.0,
+            elevation: 5.0,
+            pageSize: 20,
+            pageThreshold: 11,
+            onLoadMore: ({required pageNumber, required pageSize}) async {
+              logger.log("pageNumber: $pageNumber;\tpageSize: $pageSize");
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'pageNumber: $pageNumber;\tpageSize: $pageSize')),
+                );
+              });
+              const base = "https://meme-server.deno.dev";
+              var response = await get(Uri.parse("$base/api/images"));
+              var data = jsonDecode(response.body);
+              List memes = List.from(data);
+              return memes.map((e) => '$base${e['image']}').toList().sublist(
+                    pageNumber * pageSize,
+                    pageNumber * pageSize + pageSize,
+                  );
+            },
+            builder: (String item, BuildContext _) => Image.network(
+              item,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
@@ -143,6 +162,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 ```
+
+---
+
+## Changelog
+
+### 1.0.0
+
+- Refactored code using bloc pattern.
+- Added swipe velocity as a configurable parameter.
+- Improved animations and performance.
+- Added double-tap interaction.
+- Optional widgets for swipe actions (left and right).
+- Enhanced layout and visibility options.
+- Pagination support with `onLoadMore` callback.
+- Added logging support.
 
 ---
 
@@ -155,79 +189,36 @@ class _MyHomePageState extends State<MyHomePage> {
 - **Type:** `Widget Function(T item, BuildContext context)`
 - **Description:** A builder method that defines how each card is rendered based on the provided data of type `T`.
 
-### Optional Parameters
-
 #### `onLoadMore`
 
-- **Type:** `Future<List<T>> Function({required int pageSize, required int pageNumber})?`
-- **Description:** A callback to load more items when the stack is running low. Pagination logic is handled here.
+- **Type:** `Future<List<T>> Function({required int pageSize, required int pageNumber})`
+- **Description:** Loads more cards dynamically when the stack runs low.
 
-#### `onSwipeLeft`
+### Optional Parameters
 
-- **Type:** `void Function()?`
-- **Description:** A callback triggered when a card is swiped left.
-
-#### `onSwipeRight`
-
-- **Type:** `void Function()?`
-- **Description:** A callback triggered when a card is swiped right.
-
-#### `onDoubleTap`
-
-- **Type:** `void Function()?`
-- **Description:** A callback triggered when a card is double-tapped.
-
-#### `onSwipedLeftAppear`
-
-- **Type:** `Widget?`
-- **Description:** A widget displayed when a card is swiped left.
-
-#### `onSwipedRightAppear`
-
-- **Type:** `Widget?`
-- **Description:** A widget displayed when a card is swiped right.
-
-#### `borderRadius`
-
-- **Type:** `double`
-- **Default:** `0`
-- **Description:** The border radius of the cards.
-
-#### `elevation`
-
-- **Type:** `double`
-- **Default:** `0`
-- **Description:** The elevation level of the cards.
-
-#### `pageSize`
-
-- **Type:** `int`
-- **Default:** `1`
-- **Description:** Determines the number of cards to load per page.
-
-#### `pageThreshold`
-
-- **Type:** `int`
-- **Default:** `0`
-- **Description:** Defines the threshold at which more items are loaded.
+- `cardHeight`: Height of the cards.
+- `cardWidth`: Width of the cards.
+- `shownCards`: Number of visible cards in the stack.
+- `cardDistance`: Distance between cards.
+- `swipeVelocity`: Velocity threshold for swipe detection.
+- `cardsAnimationInMilliseconds`: Duration of swipe animations.
+- `behindCardsShouldBeOpaque`: Makes cards behind opaque.
+- `onSwipeLeft`, `onSwipeRight`, `onDoubleTap`: Callbacks for actions.
+- `onSwipedLeftAppear`, `onSwipedRightAppear`: Widgets for swipe visuals.
+- `borderRadius`: Corner radius of cards.
+- `elevation`: Shadow elevation.
 
 ---
 
-## Deprecated Parameters
+## License
 
-### `screenHeight`
-
-- **Type:** `double`
-- **Description:** Previously used to define the height of the cards. The widget now takes the entire available space.
-
-### `screenWidth`
-
-- **Type:** `double`
-- **Description:** Previously used to define the width of the cards. The widget now takes the entire available space.
+```
+MIT License
+```
 
 ---
 
-## Migration Notes
+## Contributions
 
-For existing implementations using `screenHeight` and `screenWidth`, simply remove these parameters, as the widget now automatically adapts to the available space.
+Feel free to create issues or submit pull requests on [GitHub](https://github.com/melWiss/swipeable_cards).
 
