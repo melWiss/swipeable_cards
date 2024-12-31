@@ -82,6 +82,7 @@ class _EazySwipeableCards2State<T> extends State<EazySwipeableCards2<T>> {
                           variables.frontCardXPosition + details.primaryDelta!,
                     );
                   },
+                  onDoubleTap: widget.onDoubleTap,
                   onHorizontalDragEnd: (details) {
                     if (details.velocity.pixelsPerSecond.dx.abs() > 1000) {
                       if (details.velocity.pixelsPerSecond.dx > 1000) {
