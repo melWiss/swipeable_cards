@@ -4,7 +4,7 @@
 
 The `EazySwipeableCards` widget provides a stack of interactive cards that users can swipe left, swipe right, or double-tap. This widget is ideal for applications like dating apps, meme browsing, or any app where swipe-based interaction is central to the user experience.
 
-![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output.gif?raw=true)
+![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output2.gif?raw=true)
 
 Key features include:
 
