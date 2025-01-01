@@ -53,17 +53,17 @@ class _MyHomePageState extends State<MyHomePage> {
             cardDistance: 120,
             behindCardsShouldBeOpaque: false,
             cardsAnimationInMilliseconds: 250,
-            onSwipeLeft: () {
+            onSwipeLeft: (_) {
               setState(() {
                 counter--;
               });
             },
-            onSwipeRight: () {
+            onSwipeRight: (_) {
               setState(() {
                 counter++;
               });
             },
-            onDoubleTap: () {
+            onDoubleTap: (_) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Card double-tapped!')),
               );

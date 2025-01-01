@@ -77,13 +77,13 @@ class EazySwipeableCards<T> extends StatefulWidget {
   final Widget Function(T item, BuildContext context) builder;
 
   /// Callback triggered when a card is swiped left.
-  final void Function()? onSwipeLeft;
+  final void Function(T item)? onSwipeLeft;
 
   /// Callback triggered when a card is swiped right.
-  final void Function()? onSwipeRight;
+  final void Function(T item)? onSwipeRight;
 
   /// Callback triggered when a card is double-tapped.
-  final void Function()? onDoubleTap;
+  final void Function(T item)? onDoubleTap;
 
   /// An optional widget that appears when a card is swiped left.
   final Widget? onSwipedLeftAppear;
@@ -184,13 +184,14 @@ class SwipeableCard<T> extends StatelessWidget {
               variables.frontCardXPosition + details.primaryDelta!,
         );
       },
-      onDoubleTap: widget.onDoubleTap,
+      onDoubleTap: () =>
+          widget.onDoubleTap?.call(controller.variables.data[index]),
       onHorizontalDragEnd: (details) {
         if (details.velocity.pixelsPerSecond.dx.abs() >
             controller.variables.swipeVelocity) {
           if (details.velocity.pixelsPerSecond.dx >
               controller.variables.swipeVelocity) {
-            widget.onSwipeRight?.call();
+            widget.onSwipeRight?.call(controller.variables.data[index]);
             controller.updateVariables(
               frontCardXPosition:
                   MediaQuery.sizeOf(context).width + widget.cardWidth * 2,
@@ -199,7 +200,7 @@ class SwipeableCard<T> extends StatelessWidget {
             );
           } else if (details.velocity.pixelsPerSecond.dx <
               -controller.variables.swipeVelocity) {
-            widget.onSwipeLeft?.call();
+            widget.onSwipeLeft?.call(controller.variables.data[index]);
             controller.updateVariables(
               frontCardXPosition:
                   -(MediaQuery.sizeOf(context).width + widget.cardWidth * 2),

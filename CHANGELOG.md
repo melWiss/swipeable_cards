@@ -1,3 +1,6 @@
+## 1.0.1
+- Fixed onSwipeLeft and onSwipeRight
+
 ## 1.0.0
 - Copilot refactored the code
 - Added swipe velocity as a param for the dev to choose the velocity trigger
