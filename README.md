@@ -2,14 +2,14 @@
 
 ## Overview
 
-The `EazySwipeableCards` widget provides a stack of interactive cards that users can swipe left, swipe right, or double-tap. This widget is ideal for applications like dating apps, meme browsing, or any app where swipe-based interaction is central to the user experience.
+The `EazySwipeableCards` widget provides a stack of interactive cards that users can swipe left, swipe right, swipe up, swipe down, or double-tap. This widget is ideal for applications like dating apps, meme browsing, or any app where swipe-based interaction is central to the user experience.
 
-![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output2.gif?raw=true)
+![demo](https://github.com/melWiss/swipeable_cards/blob/master/media/output3.gif?raw=true)
 
 Key features include:
 
-- Customizable swipe actions (left, right, double-tap).
-- Optional widgets that appear when swiping left or right.
+- Customizable swipe actions (left, right, up, down, double-tap).
+- Optional widgets that appear when swiping in any direction.
 - Pagination support for dynamically loading more cards.
 - Animations for swipe gestures.
 - Customizable card styles, including border radius and elevation.
@@ -26,7 +26,7 @@ To use the `EazySwipeableCards` widget in your Flutter project, first, add the `
 
 ```yaml
 dependencies:
-  eazy_swipeable_cards: ^1.0.0
+  eazy_swipeable_cards: ^1.1.0
 ```
 
 Then, import the package:
@@ -104,6 +104,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 counter++;
               });
             },
+            onSwipeUp: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Card swiped up!')),
+              );
+            },
+            onSwipeDown: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Card swiped down!')),
+              );
+            },
             onDoubleTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Card double-tapped!')),
@@ -124,6 +134,26 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Center(
                 child: Icon(
                   Icons.thumb_up,
+                  size: 100,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            onSwipedUpAppear: const Material(
+              color: Colors.blue,
+              child: Center(
+                child: Icon(
+                  Icons.arrow_upward,
+                  size: 100,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            onSwipedDownAppear: const Material(
+              color: Colors.yellow,
+              child: Center(
+                child: Icon(
+                  Icons.arrow_downward,
                   size: 100,
                   color: Colors.white,
                 ),
@@ -167,6 +197,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 ## Changelog
 
+### 1.1.0
+
+- Added support for vertical swiping (up and down).
+
 ### 1.0.0
 
 - Refactored code using bloc pattern.
@@ -203,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
 - `swipeVelocity`: Velocity threshold for swipe detection.
 - `cardsAnimationInMilliseconds`: Duration of swipe animations.
 - `behindCardsShouldBeOpaque`: Makes cards behind opaque.
-- `onSwipeLeft`, `onSwipeRight`, `onDoubleTap`: Callbacks for actions.
+- `onSwipeLeft`, `onSwipeRight`, `onSwipeUp`, `onSwipeDown`, `onDoubleTap`: Callbacks for actions.
 - `onSwipedLeftAppear`, `onSwipedRightAppear`: Widgets for swipe visuals.
 - `borderRadius`: Corner radius of cards.
 - `elevation`: Shadow elevation.

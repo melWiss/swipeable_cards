@@ -53,6 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
             cardDistance: 120,
             behindCardsShouldBeOpaque: false,
             cardsAnimationInMilliseconds: 250,
+            onSwipeUp: (item) {
+              logger.log("top: $item");
+            },
+            onSwipeDown: (item) {
+              logger.log("down: $item");
+            },
             onSwipeLeft: (_) {
               setState(() {
                 counter--;
@@ -83,6 +89,26 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Center(
                 child: Icon(
                   Icons.thumb_up,
+                  size: 100,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            onSwipedUpAppear: const Material(
+              color: Colors.blue,
+              child: Center(
+                child: Icon(
+                  Icons.arrow_upward,
+                  size: 100,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            onSwipedDownAppear: const Material(
+              color: Colors.yellow,
+              child: Center(
+                child: Icon(
+                  Icons.arrow_downward,
                   size: 100,
                   color: Colors.white,
                 ),

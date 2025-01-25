@@ -26,9 +26,13 @@ class EazySwipeableCards<T> extends StatefulWidget {
     super.key,
     this.onSwipeLeft,
     this.onSwipeRight,
+    this.onSwipeUp,
+    this.onSwipeDown,
     this.onDoubleTap,
     this.onSwipedRightAppear,
     this.onSwipedLeftAppear,
+    this.onSwipedUpAppear,
+    this.onSwipedDownAppear,
     this.borderRadius = 0,
     this.elevation = 0,
     this.pageSize = 1,
@@ -82,6 +86,12 @@ class EazySwipeableCards<T> extends StatefulWidget {
   /// Callback triggered when a card is swiped right.
   final void Function(T item)? onSwipeRight;
 
+  /// Callback triggered when a card is swiped upward.
+  final void Function(T item)? onSwipeUp;
+
+  /// Callback triggered when a card is swiped downward.
+  final void Function(T item)? onSwipeDown;
+
   /// Callback triggered when a card is double-tapped.
   final void Function(T item)? onDoubleTap;
 
@@ -90,6 +100,12 @@ class EazySwipeableCards<T> extends StatefulWidget {
 
   /// An optional widget that appears when a card is swiped right.
   final Widget? onSwipedRightAppear;
+
+  /// An optional widget that appears when a card is swiped upward.
+  final Widget? onSwipedUpAppear;
+
+  /// An optional widget that appears when a card is swiped downward.
+  final Widget? onSwipedDownAppear;
 
   /// The border radius of the cards.
   final double borderRadius;
@@ -180,8 +196,16 @@ class SwipeableCard<T> extends StatelessWidget {
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
         controller.updateVariables(
-          frontCardXPosition:
-              variables.frontCardXPosition + details.primaryDelta!,
+          frontCardPosition:
+              variables.frontCardPosition + details.primaryDelta!,
+          swipeDirection: SwipeDirection.horizontal,
+        );
+      },
+      onVerticalDragUpdate: (details) {
+        controller.updateVariables(
+          frontCardPosition:
+              variables.frontCardPosition + details.primaryDelta!,
+          swipeDirection: SwipeDirection.vertical,
         );
       },
       onDoubleTap: () =>
@@ -190,26 +214,72 @@ class SwipeableCard<T> extends StatelessWidget {
         if (details.velocity.pixelsPerSecond.dx.abs() >
             controller.variables.swipeVelocity) {
           if (details.velocity.pixelsPerSecond.dx >
-              controller.variables.swipeVelocity) {
-            widget.onSwipeRight?.call(controller.variables.data[index]);
+                  controller.variables.swipeVelocity &&
+              widget.onSwipeRight != null) {
+            widget.onSwipeRight!.call(controller.variables.data[index]);
             controller.updateVariables(
-              frontCardXPosition:
+              frontCardPosition:
                   MediaQuery.sizeOf(context).width + widget.cardWidth * 2,
               durationInMilliSeconds: widget.cardsAnimationInMilliseconds,
               animationCoeffiecient: 1,
+              swipeDirection: null,
             );
           } else if (details.velocity.pixelsPerSecond.dx <
-              -controller.variables.swipeVelocity) {
-            widget.onSwipeLeft?.call(controller.variables.data[index]);
+                  -controller.variables.swipeVelocity &&
+              widget.onSwipeLeft != null) {
+            widget.onSwipeLeft!.call(controller.variables.data[index]);
             controller.updateVariables(
-              frontCardXPosition:
+              frontCardPosition:
                   -(MediaQuery.sizeOf(context).width + widget.cardWidth * 2),
               durationInMilliSeconds: widget.cardsAnimationInMilliseconds,
               animationCoeffiecient: 1,
+              swipeDirection: null,
+            );
+          } else {
+            controller.updateVariables(
+              frontCardPosition: 0,
             );
           }
         } else {
-          controller.updateVariables(frontCardXPosition: 0);
+          controller.updateVariables(
+            frontCardPosition: 0,
+          );
+        }
+      },
+      onVerticalDragEnd: (details) {
+        if (details.velocity.pixelsPerSecond.dy.abs() >
+            controller.variables.swipeVelocity) {
+          if (details.velocity.pixelsPerSecond.dy >
+                  controller.variables.swipeVelocity &&
+              widget.onSwipeDown != null) {
+            widget.onSwipeDown!.call(controller.variables.data[index]);
+            controller.updateVariables(
+              frontCardPosition:
+                  MediaQuery.sizeOf(context).height + widget.cardHeight * 2,
+              durationInMilliSeconds: widget.cardsAnimationInMilliseconds,
+              animationCoeffiecient: 1,
+              swipeDirection: null,
+            );
+          } else if (details.velocity.pixelsPerSecond.dy <
+                  -controller.variables.swipeVelocity &&
+              widget.onSwipeUp != null) {
+            widget.onSwipeUp!.call(controller.variables.data[index]);
+            controller.updateVariables(
+              frontCardPosition:
+                  -(MediaQuery.sizeOf(context).height + widget.cardHeight * 2),
+              durationInMilliSeconds: widget.cardsAnimationInMilliseconds,
+              animationCoeffiecient: 1,
+              swipeDirection: null,
+            );
+          } else {
+            controller.updateVariables(
+              frontCardPosition: 0,
+            );
+          }
+        } else {
+          controller.updateVariables(
+            frontCardPosition: 0,
+          );
         }
       },
       child: CardAnimation(
@@ -250,7 +320,7 @@ class CardAnimation<T> extends StatelessWidget {
           controller.updateVariables(
             durationInMilliSeconds: 0,
             animationCoeffiecient: 0,
-            frontCardXPosition: 0,
+            frontCardPosition: 0,
           );
           controller.onLoadMore();
         }
@@ -288,23 +358,29 @@ class CardPositionAnimation<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(
-        begin: controller.variables.oldFrontCardXPosition,
-        end: controller.variables.frontCardXPosition,
+        begin: controller.variables.oldFrontCardPosition,
+        end: controller.variables.frontCardPosition,
       ),
       onEnd: () {
         controller.updateVariables(
-          oldFrontCardXPosition: controller.variables.frontCardXPosition,
+          oldFrontCardPosition: controller.variables.frontCardPosition,
         );
       },
       duration:
           Duration(milliseconds: controller.variables.durationInMilliSeconds),
-      builder: (context, dx, _) {
+      builder: (context, dd, _) {
         return Transform(
           transform: Matrix4.identity()
             ..scale(1 - (index - coeff) * 0.1)
             ..translate(
-              index > 0 ? 0.0 : dx,
-              -(index - coeff) * widget.cardDistance,
+              _calculateHorizontalPosition(
+                dd,
+                controller.variables.swipeDirection,
+              ),
+              _calculateVerticalPosition(
+                dd,
+                controller.variables.swipeDirection,
+              ),
             ),
           alignment: Alignment.center,
           child: SizedBox(
@@ -324,22 +400,24 @@ class CardPositionAnimation<T> extends StatelessWidget {
                         context,
                       ),
                     ),
-                    if (index == 0 &&
-                        widget.onSwipedRightAppear != null &&
-                        controller.variables.frontCardXPosition > 0)
-                      SwipeableCardOpacity(
-                        controller: controller,
-                        widget: widget,
-                        isRight: true,
-                      ),
-                    if (index == 0 &&
-                        widget.onSwipedLeftAppear != null &&
-                        controller.variables.frontCardXPosition < 0)
-                      SwipeableCardOpacity(
-                        controller: controller,
-                        widget: widget,
-                        isRight: false,
-                      ),
+                    if (controller.variables.swipeDirection != null) ...[
+                      if (index == 0 &&
+                          widget.onSwipedRightAppear != null &&
+                          controller.variables.frontCardPosition > 0)
+                        SwipeableCardOpacity(
+                          controller: controller,
+                          widget: widget,
+                          swipeDirection: controller.variables.swipeDirection!,
+                        ),
+                      if (index == 0 &&
+                          widget.onSwipedLeftAppear != null &&
+                          controller.variables.frontCardPosition < 0)
+                        SwipeableCardOpacity(
+                          controller: controller,
+                          widget: widget,
+                          swipeDirection: controller.variables.swipeDirection!,
+                        ),
+                    ]
                   ],
                 ),
               ),
@@ -349,6 +427,28 @@ class CardPositionAnimation<T> extends StatelessWidget {
       },
     );
   }
+
+  double _calculateVerticalPosition(
+    double dd,
+    SwipeDirection? swipeDirection,
+  ) {
+    if (swipeDirection == SwipeDirection.vertical && index == 0) {
+      return -(coeff) * widget.cardDistance + dd;
+    } else {
+      return -(index - coeff) * widget.cardDistance;
+    }
+  }
+
+  double _calculateHorizontalPosition(
+    double dd,
+    SwipeDirection? swipeDirection,
+  ) {
+    if (swipeDirection == SwipeDirection.horizontal) {
+      return index > 0 ? 0.0 : dd;
+    } else {
+      return 0;
+    }
+  }
 }
 
 class SwipeableCardOpacity<T> extends StatelessWidget {
@@ -356,26 +456,42 @@ class SwipeableCardOpacity<T> extends StatelessWidget {
     super.key,
     required this.controller,
     required this.widget,
-    required this.isRight,
+    required this.swipeDirection,
   });
 
   final VariablesController controller;
   final EazySwipeableCards<T> widget;
-  final bool isRight;
+  final SwipeDirection swipeDirection;
 
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: Opacity(
         opacity: _max(
-          ((controller.variables.frontCardXPosition + 10) /
+          ((controller.variables.frontCardPosition + 10) /
                   MediaQuery.sizeOf(context).width)
               .abs(),
           1,
         ),
-        child: isRight ? widget.onSwipedRightAppear : widget.onSwipedLeftAppear,
+        child: _getSwipeWidget(),
       ),
     );
+  }
+
+  Widget? _getSwipeWidget() {
+    if (swipeDirection == SwipeDirection.horizontal) {
+      if (controller.variables.frontCardPosition > 0) {
+        return widget.onSwipedRightAppear;
+      } else {
+        return widget.onSwipedLeftAppear;
+      }
+    } else {
+      if (controller.variables.frontCardPosition > 0) {
+        return widget.onSwipedDownAppear;
+      } else {
+        return widget.onSwipedUpAppear;
+      }
+    }
   }
 
   double _max(double current, double max) {

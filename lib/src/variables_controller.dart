@@ -1,5 +1,7 @@
 import 'dart:async';
 
+enum SwipeDirection { vertical, horizontal }
+
 class Variables<T> {
   /// the current page of the cards stack.
   final int currentPage;
@@ -18,11 +20,14 @@ class Variables<T> {
   /// the data that the stack of cards holds
   final List<T> data;
 
-  /// the x position of the front card.
-  final double frontCardXPosition;
+  /// the position of the front card.
+  final double frontCardPosition;
 
-  /// the old x position of the front cards.
-  final double oldFrontCardXPosition;
+  /// the old position of the front cards.
+  final double oldFrontCardPosition;
+
+  /// the direction of the swipe (if null then no swipe)
+  final SwipeDirection? swipeDirection;
 
   /// the value of this variable is either 0 or 200.
   final int durationInMilliSeconds;
@@ -36,41 +41,44 @@ class Variables<T> {
   Variables({
     required this.pageSize,
     required this.pageThreshold,
-    required this.frontCardXPosition,
-    required this.oldFrontCardXPosition,
+    required this.frontCardPosition,
+    required this.oldFrontCardPosition,
     required this.durationInMilliSeconds,
     required this.animationCoeffiecient,
     required this.onLoadMore,
     required this.data,
     required this.swipeVelocity,
     this.currentPage = 0,
+    this.swipeDirection,
   });
 
   Variables<T> copyWith({
     int? pageSize,
     int? pageThreshold,
     List<T>? data,
-    double? frontCardXPosition,
-    double? oldFrontCardXPosition,
+    double? frontCardPosition,
+    double? oldFrontCardPosition,
     int? durationInMilliSeconds,
     double? animationCoeffiecient,
     int? currentPage,
     double? swipeVelocity,
+    SwipeDirection? swipeDirection,
   }) {
     return Variables<T>(
       pageSize: pageSize ?? this.pageSize,
       pageThreshold: pageThreshold ?? this.pageThreshold,
       data: data ?? this.data,
-      frontCardXPosition: frontCardXPosition ?? this.frontCardXPosition,
+      frontCardPosition: frontCardPosition ?? this.frontCardPosition,
       durationInMilliSeconds:
           durationInMilliSeconds ?? this.durationInMilliSeconds,
       animationCoeffiecient:
           animationCoeffiecient ?? this.animationCoeffiecient,
       currentPage: currentPage ?? this.currentPage,
-      oldFrontCardXPosition:
-          oldFrontCardXPosition ?? this.oldFrontCardXPosition,
+      oldFrontCardPosition:
+          oldFrontCardPosition ?? this.oldFrontCardPosition,
       swipeVelocity: swipeVelocity ?? this.swipeVelocity,
       onLoadMore: onLoadMore,
+      swipeDirection: swipeDirection ?? this.swipeDirection,
     );
   }
 }
@@ -88,8 +96,8 @@ class VariablesController<T> {
     required double swipeVelocity,
   }) {
     _variables = Variables<T>(
-      frontCardXPosition: 0,
-      oldFrontCardXPosition: 0,
+      frontCardPosition: 0,
+      oldFrontCardPosition: 0,
       durationInMilliSeconds: 0,
       animationCoeffiecient: 0,
       onLoadMore: onLoadMore,
@@ -113,15 +121,17 @@ class VariablesController<T> {
     int? pageSize,
     int? pageThreshold,
     List<T>? data,
-    double? frontCardXPosition,
-    double? oldFrontCardXPosition,
+    double? frontCardPosition,
+    double? oldFrontCardPosition,
     int? durationInMilliSeconds,
     double? animationCoeffiecient,
     int? currentPage,
+    SwipeDirection? swipeDirection,
   }) {
     _variables = _variables.copyWith(
-      frontCardXPosition: frontCardXPosition,
-      oldFrontCardXPosition: oldFrontCardXPosition,
+      frontCardPosition: frontCardPosition,
+      oldFrontCardPosition: oldFrontCardPosition,
+      swipeDirection: swipeDirection,
       durationInMilliSeconds: durationInMilliSeconds,
       animationCoeffiecient: animationCoeffiecient,
       data: data,

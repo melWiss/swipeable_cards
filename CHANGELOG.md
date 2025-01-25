@@ -1,3 +1,6 @@
+## 1.1.0
+- Add vertical swiping support
+
 ## 1.0.1
 - Fixed onSwipeLeft and onSwipeRight
 
