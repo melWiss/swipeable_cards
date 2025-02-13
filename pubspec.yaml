@@ -1,6 +1,6 @@
 name: eazy_swipeable_cards
 description: "A new Flutter package that helps creating a stack of swipeable cards."
-version: 1.1.0
+version: 1.1.1
 homepage: "https://oussama-maatallah.web.app/blog/swipeable-cards"
 repository: https://github.com/melwiss/swipeable_cards
 

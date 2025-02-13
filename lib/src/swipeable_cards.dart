@@ -78,19 +78,19 @@ class EazySwipeableCards<T> extends StatefulWidget {
       {required int pageSize, required int pageNumber}) onLoadMore;
 
   /// A builder method to build the cards.
-  final Widget Function(T item, BuildContext context) builder;
+  final Widget Function(int index, T item, BuildContext context) builder;
 
   /// Callback triggered when a card is swiped left.
-  final void Function(T item)? onSwipeLeft;
+  final bool Function(T item)? onSwipeLeft;
 
   /// Callback triggered when a card is swiped right.
-  final void Function(T item)? onSwipeRight;
+  final bool Function(T item)? onSwipeRight;
 
   /// Callback triggered when a card is swiped upward.
-  final void Function(T item)? onSwipeUp;
+  final bool Function(T item)? onSwipeUp;
 
   /// Callback triggered when a card is swiped downward.
-  final void Function(T item)? onSwipeDown;
+  final bool Function(T item)? onSwipeDown;
 
   /// Callback triggered when a card is double-tapped.
   final void Function(T item)? onDoubleTap;
@@ -215,8 +215,8 @@ class SwipeableCard<T> extends StatelessWidget {
             controller.variables.swipeVelocity) {
           if (details.velocity.pixelsPerSecond.dx >
                   controller.variables.swipeVelocity &&
-              widget.onSwipeRight != null) {
-            widget.onSwipeRight!.call(controller.variables.data[index]);
+              widget.onSwipeRight?.call(controller.variables.data[index]) ==
+                  true) {
             controller.updateVariables(
               frontCardPosition:
                   MediaQuery.sizeOf(context).width + widget.cardWidth * 2,
@@ -226,8 +226,8 @@ class SwipeableCard<T> extends StatelessWidget {
             );
           } else if (details.velocity.pixelsPerSecond.dx <
                   -controller.variables.swipeVelocity &&
-              widget.onSwipeLeft != null) {
-            widget.onSwipeLeft!.call(controller.variables.data[index]);
+              widget.onSwipeLeft?.call(controller.variables.data[index]) ==
+                  true) {
             controller.updateVariables(
               frontCardPosition:
                   -(MediaQuery.sizeOf(context).width + widget.cardWidth * 2),
@@ -251,8 +251,8 @@ class SwipeableCard<T> extends StatelessWidget {
             controller.variables.swipeVelocity) {
           if (details.velocity.pixelsPerSecond.dy >
                   controller.variables.swipeVelocity &&
-              widget.onSwipeDown != null) {
-            widget.onSwipeDown!.call(controller.variables.data[index]);
+              widget.onSwipeDown?.call(controller.variables.data[index]) ==
+                  true) {
             controller.updateVariables(
               frontCardPosition:
                   MediaQuery.sizeOf(context).height + widget.cardHeight * 2,
@@ -262,8 +262,8 @@ class SwipeableCard<T> extends StatelessWidget {
             );
           } else if (details.velocity.pixelsPerSecond.dy <
                   -controller.variables.swipeVelocity &&
-              widget.onSwipeUp != null) {
-            widget.onSwipeUp!.call(controller.variables.data[index]);
+              widget.onSwipeUp?.call(controller.variables.data[index]) ==
+                  true) {
             controller.updateVariables(
               frontCardPosition:
                   -(MediaQuery.sizeOf(context).height + widget.cardHeight * 2),
@@ -396,6 +396,7 @@ class CardPositionAnimation<T> extends StatelessWidget {
                   children: [
                     Positioned.fill(
                       child: widget.builder(
+                        index,
                         controller.variables.data[index],
                         context,
                       ),

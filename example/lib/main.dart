@@ -55,19 +55,23 @@ class _MyHomePageState extends State<MyHomePage> {
             cardsAnimationInMilliseconds: 250,
             onSwipeUp: (item) {
               logger.log("top: $item");
+              return true;
             },
             onSwipeDown: (item) {
               logger.log("down: $item");
+              return false;
             },
             onSwipeLeft: (_) {
               setState(() {
                 counter--;
               });
+              return true;
             },
             onSwipeRight: (_) {
               setState(() {
                 counter++;
               });
+              return true;
             },
             onDoubleTap: (_) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -136,10 +140,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     pageNumber * pageSize + pageSize,
                   );
             },
-            builder: (String item, BuildContext _) => Image.network(
-              item,
-              fit: BoxFit.cover,
-            ),
+            builder: (int index, String item, BuildContext _) {
+              print("$index, $item");
+              return Image.network(
+                item,
+                fit: BoxFit.cover,
+              );
+            },
           ),
         ),
       ),

@@ -1,3 +1,7 @@
+## 1.1.1
+- add index to the builder function
+- the callback methods should return bool, if true then continue the swipe, if false prevent the swipe
+
 ## 1.1.0
 - Add vertical swiping support
 
